@@ -1,3 +1,5 @@
+
+///BOILER PLATE CODE
 var config = {
     type: Phaser.AUTO,
     width: 320,
@@ -15,6 +17,8 @@ var config = {
     }
 };
 
+
+//Initialize global variables
 var game = new Phaser.Game(config);
 var player
 var enemies
@@ -22,64 +26,59 @@ var cursors
 var enemy 
 var playerEnemyOverlap
 
-var _this
+var _this //put the game reference in _this for ease of use
 
-function preload ()
+function preload () //preload occurs prior to the scene(game) being instantiated
 {
     this.load.image('player','assets/CharacterSprites/Player.png')
     this.load.image('enemy','assets/EnemySprites/Enemy.png')
     this.load.image('playerAttack','assets/CharacterSprites/Attack.png')
 }
 
-function create ()
+function create () //Occurs when the scene is instantiated
 {
     _this = this
+
     player = this.physics.add.sprite(160,120,'player')
     enemies = this.physics.add.group()
+
     playerEnemyOverlap = this.physics.add.overlap(enemies,player,hitByEnemy)
-    cursors = this.input.keyboard.createCursorKeys()
+    cursors = this.input.keyboard.createCursorKeys() //Assigns the input keys. Default is the directional arrows.
     enemy = enemies.create(40,40, 'enemy')
 
     this.input.keyboard.on('keydown_SPACE', function(){
+        //On space keydown 'attack'
         attack()
     })
 }
 
-function update ()
+function update () //Update is called every frame
 {
-    if (cursors.left.isDown)
-    {
+    if (cursors.left.isDown){
         player.setVelocityX(-120);
 
     }
-    else if (cursors.right.isDown)
-    {
+    else if (cursors.right.isDown){
         player.setVelocityX(120);
 
     }
-    else
-    {
+    else{
         player.setVelocityX(0);
     }
-    if (cursors.up.isDown)
-    {
+    if (cursors.up.isDown){
         player.setVelocityY(-120);
 
     }
-    else if (cursors.down.isDown)
-    {
+    else if (cursors.down.isDown){
         player.setVelocityY(120);
 
     }
-    else
-    {
+    else{
         player.setVelocityY(0);
     }
-
-
 }
 
-function attack(player){
+function attack(player){ // Called when the player 
     console.log('attack!')
     var attack = _this.physics.add.sprite(80,80,'playerAttack')
     setTimeout(function(){
