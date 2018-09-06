@@ -1,0 +1,2 @@
+* For now game will be 320*240 with tiles of 16x16px
+    * This gives us a 20x15 screen 
