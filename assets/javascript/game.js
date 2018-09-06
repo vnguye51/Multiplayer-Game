@@ -78,7 +78,7 @@ function update () //Update is called every frame
     }
 }
 
-function attack(player){ // Called when the player 
+function attack(player){ // Called when the player presses spacebar
     console.log('attack!')
     var attack = _this.physics.add.sprite(80,80,'playerAttack')
     setTimeout(function(){
@@ -87,10 +87,12 @@ function attack(player){ // Called when the player
 }
 
 function hitByEnemy(player, enemy){
+    //Temporarily destroy the on overlap event
     playerEnemyOverlap.destroy()
     console.log('hit!')
     player.setTint(0xff0000)
     setTimeout(function(){
+        // After a small amount of time readd the overlap event
         console.log('recovered')
         player.setTint(0xffffff) 
         playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
