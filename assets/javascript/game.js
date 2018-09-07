@@ -24,6 +24,10 @@ var player
 var enemies
 var cursors 
 var enemy 
+var map
+var groundLayer
+var wallLayer
+var objectLayer
 var playerEnemyOverlap
 
 var _this //put the game reference in _this for ease of use
@@ -33,6 +37,10 @@ function preload () //preload occurs prior to the scene(game) being instantiated
     this.load.image('player','assets/CharacterSprites/Player.png')
     this.load.image('enemy','assets/EnemySprites/Enemy.png')
     this.load.image('playerAttack','assets/CharacterSprites/Attack.png')
+
+    this.load.image('cave', 'assets/tilemap/cave.png')
+    this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')
+
 }
 
 function create () //Occurs when the scene is instantiated
@@ -40,12 +48,34 @@ function create () //Occurs when the scene is instantiated
     _this = this
 
     player = this.physics.add.sprite(160,120,'player')
+    player.setSize(10,10)
+    console.log(player)
     enemies = this.physics.add.group()
 
     playerEnemyOverlap = this.physics.add.overlap(enemies,player,hitByEnemy)
     cursors = this.input.keyboard.createCursorKeys() //Assigns the input keys. Default is the directional arrows.
     enemy = enemies.create(40,40, 'enemy')
 
+    ////TILEMAP DATA
+    map = this.make.tilemap({key: 'map'}) //Create tilemap
+    var tileset = map.addTilesetImage('cave') //Use the tileset(must be the same name as the one in the Tiled editor)
+
+    //Create the layers
+    groundLayer = map.createStaticLayer('Ground',tileset, 0,0)
+    groundLayer.setDepth(-3)
+
+    wallLayer = map.createStaticLayer('Walls',tileset,0,0)
+    wallLayer.setDepth(-2)
+    wallLayer.setCollisionByExclusion([-1]) //Sets collision with all tiles on this layer(an array containing the values of exception tiles can be passed)
+    this.physics.add.collider(wallLayer,player) //Create collision interaction
+
+    objectLayer = map.createStaticLayer('Objects',tileset,0,0)
+    objectLayer.setCollisionByExclusion([-1,69,85,100,101,102])
+    objectLayer.setDepth(-1)
+    this.physics.add.collider(objectLayer,player)
+
+
+    //Player Inputs go here
     this.input.keyboard.on('keydown_SPACE', function(){
         //On space keydown 'attack'
         attack()
