@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/vnguye51/Multiplayer-Game/issues"
   },
-  "homepage": "https://github.com/vnguye51/Multiplayer-Game#readme"
+  "homepage": "https://github.com/vnguye51/Multiplayer-Game#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "socket.io": "^2.1.1"
+  }
 }

@@ -17,7 +17,7 @@ var config = {
     }
 };
 
-
+///Constructors for game characters
 var Character = function(control,hp,att){
     this.control = control //When this is false we should deny player input
     this.hp = hp
@@ -28,6 +28,7 @@ var Enemy = function(hp,att){
     this.hp = hp
     this.att = att
 }
+///////////////////////////////
 
 //Initialize global variables
 var player = new Character(true,5,10)
@@ -67,7 +68,9 @@ function create () //Occurs when the scene is instantiated
     player2.ref.setSize(10,10)
     enemies = this.physics.add.group()
 
+    //Attach a collision callback between the group enemies and the player
     playerEnemyOverlap = this.physics.add.overlap(enemies,player.ref,hitByEnemy)
+
     cursors = this.input.keyboard.createCursorKeys() //Assigns the input keys. Default is the directional arrows.
     enemy.ref = enemies.create(80,80, 'enemy')
 
