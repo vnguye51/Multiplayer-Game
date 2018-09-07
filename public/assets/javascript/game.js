@@ -60,18 +60,38 @@ function preload () //preload occurs prior to the scene(game) being instantiated
 function create () //Occurs when the scene is instantiated
 {
     _this = this
-
+    this.cursors = this.input.keyboard.createCursorKeys(); //Assigns the input keys. Default is the directional arrows.
+    this.otherPlayers = this.physics.add.group()
+    this.socket = io()
+    this.socket.on('currentPlayers', function(players){
+        console.log('connected')
+        for(id in players){
+            if (players[id].playerId === _this.socket.id) {
+                addPlayer(_this, players[id]); //creates _this.player
+              }
+            else{
+                addOtherPlayer(_this, players[id])
+              }
+        }
+    })
+    this.socket.on('newPlayer', function (playerInfo) {
+        addOtherPlayer(_this, playerInfo);
+      });
+    this.socket.on('disconnect', function (playerId) {
+        _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
+            if (playerId === otherPlayer.playerId) {
+            otherPlayer.destroy();
+            }
+        });
+    });
     //Attach the game engine reference to the player object
-    player.ref = this.physics.add.sprite(160,120,'player')
-    player.ref.setSize(10,10)//Change hitbox size to be a little smaller than the sprite
-    player2.ref = this.physics.add.sprite(120,120,'player')
-    player2.ref.setSize(10,10)
+    //Change hitbox size to be a little smaller than the sprite
+
     enemies = this.physics.add.group()
 
     //Attach a collision callback between the group enemies and the player
-    playerEnemyOverlap = this.physics.add.overlap(enemies,player.ref,hitByEnemy)
-
-    cursors = this.input.keyboard.createCursorKeys() //Assigns the input keys. Default is the directional arrows.
+    playerEnemyOverlap = this.physics.add.overlap(enemies,this.player,hitByEnemy)
+    
     enemy.ref = enemies.create(80,80, 'enemy')
 
     ////TILEMAP DATA
@@ -104,33 +124,65 @@ function create () //Occurs when the scene is instantiated
 }
 
 function update () //Update is called every frame
-{
-    if (cursors.left.isDown){
-        player.ref.setVelocityX(-120);
+{   // Only run update code once the player is connected
+    if(this.player){
+        if (this.cursors.left.isDown){
+            this.player.setVelocityX(-120);
+    
+        }
+        else if (this.cursors.right.isDown){
+            this.player.setVelocityX(120);
+    
+        }
+        else{
+            this.player.setVelocityX(0);
+        }
+        if (this.cursors.up.isDown){
+            this.player.setVelocityY(-120);
+    
+        }
+        else if (this.cursors.down.isDown){
+            this.player.setVelocityY(120);
+    
+        }
+        else{
+            this.player.setVelocityY(0);
+        }
 
-    }
-    else if (cursors.right.isDown){
-        player.ref.setVelocityX(120);
 
-    }
-    else{
-        player.ref.setVelocityX(0);
-    }
-    if (cursors.up.isDown){
-        player.ref.setVelocityY(-120);
 
-    }
-    else if (cursors.down.isDown){
-        player.ref.setVelocityY(120);
 
+         ////Emit Socket Signals////
+    // emit player movement
+    var x = this.player.x;
+    var y = this.player.y;
+
+    //If player position changed
+    if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y )) {
+    this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y});
     }
-    else{
-        player.ref.setVelocityY(0);
+    
+    // save old position data
+    this.player.oldPosition = {
+    x: this.player.x,
+    y: this.player.y,
+    };
+    
+    this.socket.on('playerMoved', function (playerInfo) {
+        _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
+        //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
+          if (playerInfo.playerId === otherPlayer.playerId) {
+            otherPlayer.setRotation(playerInfo.rotation);
+            otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+          }
+        });
+      });
     }
+    
+   
 }
 
 function attack(player){ // Called when the player presses spacebar
-    console.log('attack!')
     var attack = _this.physics.add.sprite(80,80,'playerAttack')
     setTimeout(function(){
         attack.destroy()
@@ -140,7 +192,6 @@ function attack(player){ // Called when the player presses spacebar
 function hitByEnemy(player, enemy){
     //Temporarily destroy the on overlap event
     playerEnemyOverlap.destroy()
-    console.log('hit!')
     player.setTint(0xff0000)
     setTimeout(function(){
         // After a small amount of time readd the overlap event
@@ -148,4 +199,16 @@ function hitByEnemy(player, enemy){
         player.setTint(0xffffff) 
         playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
     },1000)
+}
+
+function addPlayer(_this, playerInfo){
+    _this.player = _this.physics.add.image(playerInfo.x, playerInfo.y, 'player');
+    _this.player.setSize(10,10)
+}
+
+function addOtherPlayer(_this, playerInfo){
+    var otherPlayer = _this.add.sprite(playerInfo.x, playerInfo.y, 'player');
+    otherPlayer.setTint(0x00ff00);
+    otherPlayer.playerId = playerInfo.playerId;
+    _this.otherPlayers.add(otherPlayer);
 }

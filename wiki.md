@@ -10,8 +10,11 @@ https://labs.phaser.io/
 ## Free assets
 https://opengameart.org/
 
-## Pixelart Editor
-https://www.aseprite.org/ 
-
 ## Socket+Phaser Tutorial
 https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-socket-io-part-1/
+
+
+## Socket Notes
+
+* socket.emit sends a signal to the client that triggered the "on" event handler
+* socket.broadcast.emit sends a signal to ALL clients
