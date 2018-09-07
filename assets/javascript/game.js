@@ -79,6 +79,7 @@ function create () //Occurs when the scene is instantiated
                 reticle.y += pointer.movementY;
             }
         }, this);
+
 }
 
 function update () //Update is called every frame
@@ -108,6 +109,7 @@ function update () //Update is called every frame
 
     //player faces reticle
     player.rotation = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y);
+    var attackDirect = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y);
 
     // Makes reticle move with player
     reticle.body.velocity.x = player.body.velocity.x;
@@ -117,11 +119,17 @@ function update () //Update is called every frame
     constrainReticle(reticle);
 
     constrainVelocity(reticle);
+
+    playerCoordX = player.x;
+    playerCoordY = player.y
+    
 }
 
 function attack(player){ // Called when the player presses spacebar
     console.log('attack!')
-    var attack = _this.physics.add.sprite(80,80,'playerAttack')
+    var x = playerCoordX;
+    var y = playerCoordY;
+    var attack = _this.physics.add.sprite(x, y ,'playerAttack')
     setTimeout(function(){
         attack.destroy()
     },200)
