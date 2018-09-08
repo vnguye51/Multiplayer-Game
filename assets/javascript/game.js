@@ -2,8 +2,8 @@
 ///BOILER PLATE CODE
 var config = {
     type: Phaser.AUTO,
-    width: 320,
-    height: 240,
+    width: 400,
+    height: 300,
     physics: {
         default: 'arcade',
         arcade: {
@@ -30,6 +30,7 @@ var _this //put the game reference in _this for ease of use
 
 function preload () //preload occurs prior to the scene(game) being instantiated
 {
+    this.load.image('background', 'assets/CharacterSprites/back.jpg')
     this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
     this.load.image('player','assets/CharacterSprites/Player_arrow.png')
     this.load.image('enemy','assets/EnemySprites/Enemy.png')
@@ -41,19 +42,33 @@ function create () //Occurs when the scene is instantiated
     _this = this
 
     //sprites and background
+    this.add.image(0,0, 'background');
     player = this.physics.add.sprite(160,120,'player');
-    enemies = this.physics.add.group()
-    reticle = this.physics.add.sprite(180, 120, 'pointer');
+    enemies = this.physics.add.group();
+    reticle = this.physics.add.sprite(180,120, 'pointer');
+    hitboxG = this.physics.add.group();
 
-        //camera
-        this.cameras.main.setSize(400, 300);
-        this.cameras.main.startFollow(player);
+    //camera
+    camera = this.cameras.main
+    camera.setSize(400, 300);
+    camera.startFollow(player);
+
+    if (this.cameras.main.deadzone)
+    {
+        graphics = this.add.graphics().setScrollFactor(0);
+        graphics.lineStyle(2, 0x00ff00, 1);
+        graphics.strokeRect(200, 200, this.cameras.main.deadzone.width, this.cameras.main.deadzone.height);
+    }
+
+
+    
     
 
     playerEnemyOverlap = this.physics.add.overlap(enemies,player,hitByEnemy)
+    enemyAttackOverlap = this.physics.add.overlap(enemies,hitboxG,hitEnemy)
     cursors = this.input.keyboard.createCursorKeys() //Assigns the input keys. Default is the directional arrows.
     
-    enemy = enemies.create(40,40, 'enemy')
+    enemy = enemies.create(100,100, 'enemy');
 
     this.input.keyboard.on('keydown_SPACE', function(){
         //On space keydown 'attack'
@@ -109,7 +124,7 @@ function update () //Update is called every frame
 
     //player faces reticle
     player.rotation = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y);
-    var attackDirect = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y);
+    attackDirect = Phaser.Math.Angle.Between(player.x, player.y, reticle.x, reticle.y);
 
     // Makes reticle move with player
     reticle.body.velocity.x = player.body.velocity.x;
@@ -121,17 +136,25 @@ function update () //Update is called every frame
     constrainVelocity(reticle);
 
     playerCoordX = player.x;
-    playerCoordY = player.y
+    playerCoordY = player.y;
     
 }
 
 function attack(player){ // Called when the player presses spacebar
-    console.log('attack!')
+    
+    //angling
     var x = playerCoordX;
     var y = playerCoordY;
-    var attack = _this.physics.add.sprite(x, y ,'playerAttack')
+    var xvec = Math.cos(attackDirect);
+    var yvec = Math.sin(attackDirect);
+    var newx = x + (40*xvec);
+    var newy = y + (40*yvec);
+    //attack creation
+    hitbox = hitboxG.create(newx, newy ,'playerAttack')
+
+    
     setTimeout(function(){
-        attack.destroy()
+        hitbox.destroy()
     },200)
 }
 
@@ -145,7 +168,17 @@ function hitByEnemy(player, enemy){
         console.log('recovered')
         player.setTint(0xffffff) 
         playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
-    },1000)
+    },200)
+}
+
+function hitEnemy(){
+    enemyAttackOverlap.destroy()
+    console.log('goteem');
+    setTimeout(function(){
+        console.log('recovery')
+        enemyAttackOverlap = _this.physics.add.overlap(enemies,hitboxG,hitEnemy)
+
+    },50)
 }
 
 // Ensures sprite speed doesnt exceed maxVelocity while update is called
