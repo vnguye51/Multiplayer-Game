@@ -18,3 +18,6 @@ https://gamedevacademy.org/create-a-basic-multiplayer-game-in-phaser-3-with-sock
 
 * socket.emit sends a signal to the client that triggered the "on" event handler
 * socket.broadcast.emit sends a signal to ALL clients
+
+## Creating class objects(to help separate code)
+http://labs.phaser.io/edit.html?src=src\game%20objects\images\custom%20image%20class%20ES6.js
