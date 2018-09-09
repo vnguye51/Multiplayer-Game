@@ -64,7 +64,6 @@ function preload () //preload occurs prior to the scene(game) being instantiated
 function create () //Occurs when the scene is instantiated
 {
     _this = this
-
      //Assigns the input keys. 
     this.cursors = this.input.keyboard.addKeys({ 
         'up': Phaser.Input.Keyboard.KeyCodes.W, 
@@ -72,12 +71,9 @@ function create () //Occurs when the scene is instantiated
         'left': Phaser.Input.Keyboard.KeyCodes.A,
         'right': Phaser.Input.Keyboard.KeyCodes.D });
     
-    
-    console.log(this.cursors)
     this.otherPlayers = this.physics.add.group()
     this.socket = io()
     this.socket.on('currentPlayers', function(players){
-        console.log('connected')
         for(id in players){
             if (players[id].playerId === _this.socket.id) {
                 addPlayer(_this, players[id]); //creates _this.player
@@ -104,9 +100,7 @@ function create () //Occurs when the scene is instantiated
     //camera
     this.cameras.main.setSize(400, 300);
 
-    //Attach a collision callback between the group enemies and the player
-    playerEnemyOverlap = this.physics.add.overlap(enemies,this.player,hitByEnemy)
-    
+
     enemy.ref = enemies.create(80,80, 'enemy')
 
     ////TILEMAP DATA
@@ -159,6 +153,7 @@ function create () //Occurs when the scene is instantiated
 function update () //Update is called every frame
 {   // Only run update code once the player is connected
     if(this.player){
+        if(this.player.stats.control == true)
         if (this.cursors.left.isDown){
             this.player.setVelocityX(-120);
     
@@ -224,8 +219,6 @@ function update () //Update is called every frame
         });
       });
     }
-    
-   
 }
 
 function attack(player){ // Called when the player presses spacebar
@@ -238,9 +231,11 @@ function attack(player){ // Called when the player presses spacebar
 function hitByEnemy(player, enemy){
     //Temporarily destroy the on overlap event
     playerEnemyOverlap.destroy()
+    player.stats.control = false
     player.setTint(0xff0000)
     setTimeout(function(){
         // After a small amount of time readd the overlap event
+        player.stats.control = true
         console.log('recovered')
         player.setTint(0xffffff) 
         playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
@@ -253,7 +248,15 @@ function addPlayer(_this, playerInfo){
     _this.cameras.main.startFollow(_this.player);
     _this.physics.add.collider(wallLayer,_this.player) //Create collision interaction
     _this.physics.add.collider(objectLayer,_this.player)
+    _this.player.stats = {
+        hp: 5,
+        control: true,
+    }
+    //Attach a collision callback between the group enemies and the player
+    console.log(_this.player)
 
+    playerEnemyOverlap = _this.physics.add.overlap(enemies,_this.player,hitByEnemy)
+    
 }
 
 function addOtherPlayer(_this, playerInfo){
