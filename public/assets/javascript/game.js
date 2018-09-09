@@ -17,26 +17,12 @@ var config = {
     }
 };
 
-///Constructors for game characters
-var Character = function(control,hp,att){
-    this.control = control //When this is false we should deny player input
-    this.hp = hp
-    this.att = att
-}
-
-var Enemy = function(hp,att){
-    this.hp = hp
-    this.att = att
-}
 ///////////////////////////////
 
 //Initialize global variables
 
 var game = new Phaser.Game(config);
-var player
 var enemies 
-var cursors 
-var enemy = new Enemy(3,1)
 var map
 var groundLayer
 var wallLayer
@@ -53,7 +39,7 @@ function preload () //preload occurs prior to the scene(game) being instantiated
     this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
     
     //Load enemy assets
-    this.load.image('enemy','assets/EnemySprites/Enemy.png')
+    this.load.image('enemy','assets/enemies/sprites/Enemy.png')
 
     //Load tilemap assets
     this.load.image('cave', 'assets/tilemap/cave.png')
@@ -95,13 +81,17 @@ function create () //Occurs when the scene is instantiated
     });
     
     enemies = this.physics.add.group()
+    enemy = new Tier1Melee(this,120,120)
+    enemies.add(enemy,true)
+    enemies.getChildren().forEach(function(enemy){
+        enemy.create()
+    })
     reticle = this.physics.add.sprite(180, 120, 'pointer');
 
     //camera
     this.cameras.main.setSize(400, 300);
 
-
-    enemy.ref = enemies.create(80,80, 'enemy')
+    
 
     ////TILEMAP DATA
     map = this.make.tilemap({key: 'map'}) //Create tilemap
@@ -122,7 +112,8 @@ function create () //Occurs when the scene is instantiated
     objectLayer.setCollisionByExclusion([-1,69,85,100,101,102])
     objectLayer.setDepth(-1)
 
-
+    this.physics.add.collider(wallLayer,enemies)
+    this.physics.add.collider(objectLayer,enemies)
     //Player Inputs go here
     this.input.keyboard.on('keydown_SPACE', function(){
         //On space keydown 'attack'
@@ -150,33 +141,40 @@ function create () //Occurs when the scene is instantiated
     }, this);
 }
 
-function update () //Update is called every frame
+function update() //Update is called every frame
 {   // Only run update code once the player is connected
-    if(this.player){
-        if(this.player.stats.control == true)
-        if (this.cursors.left.isDown){
-            this.player.setVelocityX(-120);
-    
-        }
-        else if (this.cursors.right.isDown){
-            this.player.setVelocityX(120);
-    
-        }
-        else{
-            this.player.setVelocityX(0);
-        }
-        if (this.cursors.up.isDown){
-            this.player.setVelocityY(-120);
-    
-        }
-        else if (this.cursors.down.isDown){
-            this.player.setVelocityY(120);
-    
-        }
-        else{
-            this.player.setVelocityY(0);
-        }
+    enemies.getChildren().forEach(function(enemy){
+        enemy.update(_this)
+    })
 
+    if(this.player){
+        // console.log(this.player.x)
+        if(this.player.stats.control == true){
+
+            if (this.cursors.left.isDown){
+                this.player.setVelocityX(-120);
+        
+            }
+            else if (this.cursors.right.isDown){
+                this.player.setVelocityX(120);
+        
+            }
+            else{
+                this.player.setVelocityX(0);
+            }
+            if (this.cursors.up.isDown){
+                this.player.setVelocityY(-120);
+        
+            }
+            else if (this.cursors.down.isDown){
+                this.player.setVelocityY(120);
+        
+            }
+            else{
+                this.player.setVelocityY(0);
+            }
+        }
+        
     //player faces reticle
     this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
     var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
@@ -231,15 +229,25 @@ function attack(player){ // Called when the player presses spacebar
 function hitByEnemy(player, enemy){
     //Temporarily destroy the on overlap event
     playerEnemyOverlap.destroy()
+    //Remove player control
     player.stats.control = false
+
+    //Calculate angle between the the collision
+    var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
+    //Move the player away from the collision (theta+180degrees)
+    player.body.velocity.x = (Math.cos(theta+Math.PI)*240)
+    player.body.velocity.y = (Math.sin(theta+Math.PI)*240)
+
+    //Color the player a little to show damage
     player.setTint(0xff0000)
     setTimeout(function(){
         // After a small amount of time readd the overlap event
         player.stats.control = true
-        console.log('recovered')
+        //Return player to original color
         player.setTint(0xffffff) 
+        // Readd the overlap event
         playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
-    },1000)
+    },300)
 }
 
 function addPlayer(_this, playerInfo){
@@ -253,7 +261,6 @@ function addPlayer(_this, playerInfo){
         control: true,
     }
     //Attach a collision callback between the group enemies and the player
-    console.log(_this.player)
 
     playerEnemyOverlap = _this.physics.add.overlap(enemies,_this.player,hitByEnemy)
     
