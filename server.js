@@ -14,8 +14,9 @@ var PORT = process.env.PORT || 4040;
 var players = {};
 var enemies = {
     '0': {
-        x: 120,
-        y: 120,
+        id: 0,
+        x: 400,
+        y: 400,
         health: 3,
     }
 };
@@ -64,12 +65,16 @@ io.on('connection', function (socket) {
       });
 
     socket.on('enemyHit', function(enemyID){
-        enemies[enemyID].health -= 1;
-        if(enemies[enemyID].health <= 0){
-            delete enemies[enemyID]
-            socket.emit('enemyDeath',enemyID)
-            socket.broadcastcast.emit('enemyDeath',enemyID)
+        if(enemies[enemyID]){
+
+            enemies[enemyID].health -= 1;
+            if(enemies[enemyID].health <= 0){
+                delete enemies[enemyID]
+                socket.emit('enemyDeath',enemyID)
+                socket.broadcast.emit('enemyDeath',enemyID)
+            }
         }
+
     })
     
 });

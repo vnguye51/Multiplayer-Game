@@ -1,18 +1,22 @@
 class Tier1Melee extends Phaser.Physics.Arcade.Sprite {
 
-    constructor (scene, x, y)
+    constructor (scene, x, y, health, id)
     {   
         //Super grabs the constructor from the original class that this script extends
-        super(scene, x, y);
+        super(scene, x, y, health,id);
 
         this.setTexture('enemy');
         this.setPosition(x, y);
+        this.health = 3
+        this.id = id
     }
     create(){
         this.speed = 40
+        
         this.state = 'seeking'
         this.seeking(this)
         this.setSize(12,12)
+        this.target = null
     }
     update(scene){
         if(this.state == 'seeking'){
@@ -20,7 +24,6 @@ class Tier1Melee extends Phaser.Physics.Arcade.Sprite {
                 var xdist = scene.player.x
                 var ydist = scene.player.y
                 var dist = Math.sqrt(Math.pow(xdist-this.x,2)+Math.pow(ydist-this.y,2))
-                console.log(dist)
 
                 if(dist < 100){
                     this.state = 'tracking'

@@ -28,6 +28,7 @@ var groundLayer
 var wallLayer
 var objectLayer
 var playerEnemyOverlap
+var attackCollider
 
 var _this //put the game reference in _this for ease of use
 
@@ -37,6 +38,7 @@ function preload () //preload occurs prior to the scene(game) being instantiated
     this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
     this.load.image('player','assets/CharacterSprites/Player_arrow.png')
     this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
+    this.load.image('playerMeleeAttack', 'assets/CharacterSprites/MeleeAttack.png')
     
     //Load enemy assets
     this.load.image('enemy','assets/enemies/sprites/Enemy.png')
@@ -130,7 +132,7 @@ function create () //Occurs when the scene is instantiated
     //Player Inputs go here
     this.input.keyboard.on('keydown_SPACE', function(){
         //On space keydown 'attack'
-        attack()
+        meleeAttack()
     })
 
     // Locks pointer on mousedown
@@ -210,7 +212,7 @@ function update() //Update is called every frame
 
         //If player position changed
         if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y )) {
-        this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y});
+            this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y});
         }
         
         // save old position data
@@ -236,6 +238,29 @@ function attack(player){ // Called when the player presses spacebar
     setTimeout(function(){
         attack.destroy()
     },200)
+}
+
+function meleeAttack(){
+    var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
+    var attackX = _this.player.x + Math.cos(theta)*20
+    var attackY = _this.player.y + Math.sin(theta)*20
+    var attack = _this.physics.add.sprite(attackX,attackY,'playerMeleeAttack')
+    var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
+        enemyHit(attack,enemy,attackCollider)
+    }) //At some point this collider should be moved to the global scope and never destroyed
+    setTimeout(function(){
+        attack.destroy()
+        
+    },200)
+}
+
+function enemyHit(attack,enemy,collider){
+    collider.destroy()
+    _this.socket.emit('enemyHit',enemy.id)
+    enemy.setTint(0x00ffff)
+    setTimeout(function(){
+        enemy.setTint(0xffffff)
+    },500)
 }
 
 function hitByEnemy(player, enemy){
@@ -289,13 +314,18 @@ function addOtherPlayer(_this, playerInfo){
 }
 
 function addEnemy(_this, enemyInfo){
-    enemy = new Tier1Melee(_this,120,120)
+    enemy = new Tier1Melee(_this,enemyInfo.x,enemyInfo.y,enemyInfo.health,enemyInfo.id)
     enemies.add(enemy,true)
     enemy.create()
 }
 
 function removeEnemy(_this,enemyID){
-
+    //Should find a way to immediately remove the enemy by its ID instead of looping through the group
+    enemies.getChildren().forEach(function(enemy){
+        if(enemy.id == enemyID){
+            enemies.remove(enemy,true)
+        }
+    })
 }
 
 // Ensures sprite speed doesnt exceed maxVelocity while update is called
