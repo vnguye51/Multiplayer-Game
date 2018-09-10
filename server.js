@@ -6,13 +6,14 @@ var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
 var collisionMap = require('./public/assets/tilemap/Map1.json')
+var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
-var enemies = {
+var enemyList = {
     '0': {
         id: 0,
         x: 400,
@@ -21,7 +22,7 @@ var enemies = {
     }
 };
 
-
+enemyList[0] = new enemies.Tier1Melee(200,200,3,0)
 
 
 app.use(express.static(__dirname + '/public'));
@@ -45,7 +46,7 @@ io.on('connection', function (socket) {
     };
     // send the players object to the new player
     socket.emit('currentPlayers', players);
-    socket.emit('currentEnemies', enemies);
+    socket.emit('currentEnemies', enemyList);
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
@@ -74,11 +75,18 @@ io.on('connection', function (socket) {
                 socket.broadcast.emit('enemyDeath',enemyID)
             }
         }
-
     })
-    
 });
 
+function updateEnemy(){
+    setTimeout(function(){
+        enemyList[0].update(players)
+        io.emit('updateEnemies',enemyList)
+        updateEnemy()
+    },33)
+}
+
+updateEnemy()
 
 // Start our server so that it can begin listening to client requests.
 server.listen(PORT, function() {
@@ -86,6 +94,10 @@ server.listen(PORT, function() {
   console.log("Server listening on: http://localhost:" + PORT);
 });
 
+
+
+///INCOMPLETE 
+///PORTING THE JSON COLLISION INFO TO THE SERVER///
 function queryCollisions(width,height,xpos,ypos,xvel,yvel,map){
     //Horizontal Collision
     if (place_meeting(xpos+xvel,ypos,width,height,map)){	

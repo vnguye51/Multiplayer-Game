@@ -53,6 +53,8 @@ function create () //Occurs when the scene is instantiated
 {
     _this = this
      //Assigns the input keys. 
+     enemies = this.physics.add.group()
+
     this.cursors = this.input.keyboard.addKeys({ 
         'up': Phaser.Input.Keyboard.KeyCodes.W, 
         'down': Phaser.Input.Keyboard.KeyCodes.S,
@@ -81,6 +83,13 @@ function create () //Occurs when the scene is instantiated
             addEnemy(_this, enemies[id])
         }
     })
+
+    this.socket.on('updateEnemies',function(enemies){
+        for(id in enemies){
+            updateEnemy(_this,enemies[id])
+        }
+    })
+
     this.socket.on('enemyDeath',function(enemyID){
         removeEnemy(_this, enemyID)
     })
@@ -95,12 +104,8 @@ function create () //Occurs when the scene is instantiated
     });
     
 
-    enemies = this.physics.add.group()
-    // enemy = new Tier1Melee(this,120,120)
-    // enemies.add(enemy,true)
-    // enemies.getChildren().forEach(function(enemy){
-    //     enemy.create()
-    // })
+
+ 
     reticle = this.physics.add.sprite(180, 120, 'pointer');
 
     //camera
@@ -127,8 +132,8 @@ function create () //Occurs when the scene is instantiated
     objectLayer.setCollisionByExclusion([-1,69,85,100,101,102])
     objectLayer.setDepth(-1)
 
-    this.physics.add.collider(wallLayer,enemies)
-    this.physics.add.collider(objectLayer,enemies)
+    // this.physics.add.collider(wallLayer,enemies)
+    // this.physics.add.collider(objectLayer,enemies)
     //Player Inputs go here
     this.input.keyboard.on('keydown_SPACE', function(){
         //On space keydown 'attack'
@@ -158,9 +163,9 @@ function create () //Occurs when the scene is instantiated
 
 function update() //Update is called every frame
 {   // Only run update code once the player is connected
-    enemies.getChildren().forEach(function(enemy){
-        enemy.update(_this)
-    })
+    // enemies.getChildren().forEach(function(enemy){
+    //     enemy.update(_this)
+    // })
 
     if(this.player){
         if(this.player.stats.control == true){
@@ -319,6 +324,15 @@ function addEnemy(_this, enemyInfo){
     enemy.create()
 }
 
+function updateEnemy(_this,enemyInfo){
+    enemies.getChildren().forEach(function(enemy){
+        if(enemy.id == enemyInfo.id){
+            enemy.x = enemyInfo.x
+            enemy.y = enemyInfo.y
+        }
+    })
+}
+
 function removeEnemy(_this,enemyID){
     //Should find a way to immediately remove the enemy by its ID instead of looping through the group
     enemies.getChildren().forEach(function(enemy){
@@ -366,4 +380,3 @@ function constrainReticle(reticle)
     else if (distY < -300)
         reticle.y = _this.player.y-300;
 }
-
