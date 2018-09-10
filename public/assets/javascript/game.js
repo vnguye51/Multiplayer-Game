@@ -71,7 +71,19 @@ function create () //Occurs when the scene is instantiated
     })
     this.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayer(_this, playerInfo);
-      });
+    });
+
+
+    this.socket.on('currentEnemies', function(enemies){
+        for(id in enemies){
+            addEnemy(_this, enemies[id])
+        }
+    })
+    this.socket.on('enemyDeath',function(enemyID){
+        removeEnemy(_this, enemyID)
+    })
+
+    
     this.socket.on('disconnect', function (playerId) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             if (playerId === otherPlayer.playerId) {
@@ -80,12 +92,13 @@ function create () //Occurs when the scene is instantiated
         });
     });
     
+
     enemies = this.physics.add.group()
-    enemy = new Tier1Melee(this,120,120)
-    enemies.add(enemy,true)
-    enemies.getChildren().forEach(function(enemy){
-        enemy.create()
-    })
+    // enemy = new Tier1Melee(this,120,120)
+    // enemies.add(enemy,true)
+    // enemies.getChildren().forEach(function(enemy){
+    //     enemy.create()
+    // })
     reticle = this.physics.add.sprite(180, 120, 'pointer');
 
     //camera
@@ -148,7 +161,6 @@ function update() //Update is called every frame
     })
 
     if(this.player){
-        // console.log(this.player.x)
         if(this.player.stats.control == true){
 
             if (this.cursors.left.isDown){
@@ -175,47 +187,47 @@ function update() //Update is called every frame
             }
         }
         
-    //player faces reticle
-    this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
-    var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
+        //player faces reticle
+        this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
+        var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
 
-    // Makes reticle move with player
-    reticle.body.velocity.x = this.player.body.velocity.x;
-    reticle.body.velocity.y = this.player.body.velocity.y;
+        // Makes reticle move with player
+        reticle.body.velocity.x = this.player.body.velocity.x;
+        reticle.body.velocity.y = this.player.body.velocity.y;
 
-    // Constrain position of reticle
-    constrainReticle(reticle);
-    constrainVelocity(reticle);
+        // Constrain position of reticle
+        constrainReticle(reticle);
+        constrainVelocity(reticle);
 
-    playerCoordX = this.player.x;
-    playerCoordY = this.player.y
+        playerCoordX = this.player.x;
+        playerCoordY = this.player.y
 
 
-    ////Emit Socket Signals////
-    // emit player movement
-    var x = this.player.x;
-    var y = this.player.y;
+        ////Emit Socket Signals////
+        // emit player movement
+        var x = this.player.x;
+        var y = this.player.y;
 
-    //If player position changed
-    if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y )) {
-    this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y});
-    }
-    
-    // save old position data
-    this.player.oldPosition = {
-    x: this.player.x,
-    y: this.player.y,
-    };
-    
-    this.socket.on('playerMoved', function (playerInfo) {
-        _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
-        //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
-          if (playerInfo.playerId === otherPlayer.playerId) {
-            otherPlayer.setRotation(playerInfo.rotation);
-            otherPlayer.setPosition(playerInfo.x, playerInfo.y);
-          }
+        //If player position changed
+        if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y )) {
+        this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y});
+        }
+        
+        // save old position data
+        this.player.oldPosition = {
+        x: this.player.x,
+        y: this.player.y,
+        };
+        
+        this.socket.on('playerMoved', function (playerInfo) {
+            _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
+            //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
+            if (playerInfo.playerId === otherPlayer.playerId) {
+                otherPlayer.setRotation(playerInfo.rotation);
+                otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+            }
+            });
         });
-      });
     }
 }
 
@@ -227,7 +239,7 @@ function attack(player){ // Called when the player presses spacebar
 }
 
 function hitByEnemy(player, enemy){
-    //Temporarily destroy the on overlap event
+    //Temporarily destroy the on overlap event(player is invulnerable)
     playerEnemyOverlap.destroy()
     //Remove player control
     player.stats.control = false
@@ -235,14 +247,17 @@ function hitByEnemy(player, enemy){
     //Calculate angle between the the collision
     var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
     //Move the player away from the collision (theta+180degrees)
-    player.body.velocity.x = (Math.cos(theta+Math.PI)*240)
-    player.body.velocity.y = (Math.sin(theta+Math.PI)*240)
+    player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
+    player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
 
     //Color the player a little to show damage
     player.setTint(0xff0000)
     setTimeout(function(){
-        // After a small amount of time readd the overlap event
+        // After a small amount of time player regains control
         player.stats.control = true
+    },100)
+    setTimeout(function(){
+        // After a little more time readd the overlap event 
         //Return player to original color
         player.setTint(0xffffff) 
         // Readd the overlap event
@@ -271,6 +286,16 @@ function addOtherPlayer(_this, playerInfo){
     otherPlayer.setTint(0x00ff00);
     otherPlayer.playerId = playerInfo.playerId;
     _this.otherPlayers.add(otherPlayer);
+}
+
+function addEnemy(_this, enemyInfo){
+    enemy = new Tier1Melee(_this,120,120)
+    enemies.add(enemy,true)
+    enemy.create()
+}
+
+function removeEnemy(_this,enemyID){
+
 }
 
 // Ensures sprite speed doesnt exceed maxVelocity while update is called
@@ -311,3 +336,4 @@ function constrainReticle(reticle)
     else if (distY < -300)
         reticle.y = _this.player.y-300;
 }
+
