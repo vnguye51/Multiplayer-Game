@@ -1,3 +1,7 @@
+
+//Constructor for basic enemy
+//Wanders around until a player enters its radius
+//Then chases that player
 Tier1Melee = function(x,y,health,id){   
     this.x = x
     this.y = y
@@ -9,6 +13,7 @@ Tier1Melee = function(x,y,health,id){
     this.state = 'seeking'
     this.target = null
 
+    //Update function is called every frame
     this.update = function(players){
 
         if(Object.keys(players).length!=0){
