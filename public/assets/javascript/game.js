@@ -79,7 +79,6 @@ function create () //Occurs when the scene is instantiated
 
 
     this.socket.on('currentEnemies', function(enemies){
-        console.log(enemies)
         for(id in enemies){
             addEnemy(_this, enemies[id])
         }
