@@ -79,6 +79,7 @@ function create () //Occurs when the scene is instantiated
 
 
     this.socket.on('currentEnemies', function(enemies){
+        console.log(enemies)
         for(id in enemies){
             addEnemy(_this, enemies[id])
         }
@@ -132,14 +133,7 @@ function create () //Occurs when the scene is instantiated
     objectLayer.setCollisionByExclusion([-1,69,85,100,101,102])
     objectLayer.setDepth(-1)
 
-    // this.physics.add.collider(wallLayer,enemies)
-    // this.physics.add.collider(objectLayer,enemies)
     //Player Inputs go here
-    this.input.keyboard.on('keydown_SPACE', function(){
-        //On space keydown 'attack'
-        meleeAttack()
-    })
-
     // Locks pointer on mousedown
     game.canvas.addEventListener('mousedown', function () {
         game.input.mouse.requestPointerLock();
@@ -159,14 +153,14 @@ function create () //Occurs when the scene is instantiated
             reticle.y += pointer.movementY;
         }
     }, this);
+
+    this.input.on('pointerdown',function(){
+        meleeAttack()
+    })
 }
 
 function update() //Update is called every frame
 {   // Only run update code once the player is connected
-    // enemies.getChildren().forEach(function(enemy){
-    //     enemy.update(_this)
-    // })
-
     if(this.player){
         if(this.player.stats.control == true){
 
@@ -250,6 +244,7 @@ function meleeAttack(){
     var attackX = _this.player.x + Math.cos(theta)*20
     var attackY = _this.player.y + Math.sin(theta)*20
     var attack = _this.physics.add.sprite(attackX,attackY,'playerMeleeAttack')
+    attack.rotation = _this.player.rotation + Math.PI/2
     var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
         enemyHit(attack,enemy,attackCollider)
     }) //At some point this collider should be moved to the global scope and never destroyed
@@ -260,39 +255,46 @@ function meleeAttack(){
 }
 
 function enemyHit(attack,enemy,collider){
-    collider.destroy()
-    _this.socket.emit('enemyHit',enemy.id)
-    enemy.setTint(0x00ffff)
-    setTimeout(function(){
-        enemy.setTint(0xffffff)
-    },500)
+    if(collider.world){
+        collider.destroy()
+        _this.socket.emit('enemyHit',enemy.id)
+        enemy.setTint(0x00ffff)
+        setTimeout(function(){
+            enemy.setTint(0xffffff)
+        },500)
+    }
+    
 }
 
 function hitByEnemy(player, enemy){
-    //Temporarily destroy the on overlap event(player is invulnerable)
-    playerEnemyOverlap.destroy()
-    //Remove player control
-    player.stats.control = false
-
-    //Calculate angle between the the collision
-    var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
-    //Move the player away from the collision (theta+180degrees)
-    player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
-    player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
-
-    //Color the player a little to show damage
-    player.setTint(0xff0000)
-    setTimeout(function(){
-        // After a small amount of time player regains control
-        player.stats.control = true
-    },100)
-    setTimeout(function(){
-        // After a little more time readd the overlap event 
-        //Return player to original color
-        player.setTint(0xffffff) 
-        // Readd the overlap event
-        playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
-    },300)
+    //Check if the overlap still exists
+    if(playerEnemyOverlap.world){
+        //Temporarily destroy the on overlap event(player is invulnerable)
+        playerEnemyOverlap.destroy()
+        //Remove player control
+        player.stats.control = false
+    
+        //Calculate angle between the the collision
+        var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
+        //Move the player away from the collision (theta+180degrees)
+        player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
+        player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
+    
+        //Color the player a little to show damage
+        player.setTint(0xff0000)
+        setTimeout(function(){
+            // After a small amount of time player regains control
+            player.stats.control = true
+        },100)
+        setTimeout(function(){
+            // After a little more time readd the overlap event 
+            //Return player to original color
+            player.setTint(0xffffff) 
+            // Readd the overlap event
+            playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
+        },300)
+    }
+   
 }
 
 function addPlayer(_this, playerInfo){

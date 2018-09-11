@@ -8,9 +8,11 @@ Tier1Melee = function(x,y,health,id){
     this.speed = 1
     this.state = 'seeking'
     this.target = null
+    this.walkCounter = 30
+    this.aggroTimer = 30
+
 
     this.update = function(players){
-
         if(Object.keys(players).length!=0){
             if(this.state == 'seeking'){
                 var data = findClosest(this.x,this.y,players)
@@ -25,9 +27,12 @@ Tier1Melee = function(x,y,health,id){
                 }
             }
             else if(this.state == 'aggro'){
-                var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
-                this.xvel = uvec[0]*this.speed
-                this.yvel = uvec[1]*this.speed
+                if(this.target){
+                    reAggro(this,players)
+                    var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                    this.xvel = uvec[0]*this.speed
+                    this.yvel = uvec[1]*this.speed
+                }
             }
             this.x += this.xvel
             this.y += this.yvel
@@ -37,19 +42,19 @@ Tier1Melee = function(x,y,health,id){
 
 
 function findClosest(x,y,players){
-    console.log(players)
     //Loop through the players looking for the closest player
     var minDist = 9999
     var target = null
     for(id in players){
         //Pythag theorem to find distance
-        var dist = Math.hypot((x-players[id].x,2),(y-players[id].x,2))
+        var dist = Math.hypot((x-players[id].x),(y-players[id].y))
         if(dist < minDist){
             minDist = dist
             target=players[id]
         }
-        return [minDist,target]
     }
+    return [minDist,target]
+
 }
 
 function angleBetween(x0,y0,x1,y1){
@@ -73,26 +78,42 @@ function unitVector(x0,y0,x1,y1){
 }
 
 function randomWalk(_this){
-    setTimeout(function(){
+    if(_this.walkCounter > 0){
+        _this.walkCounter -= 1
+    }
+    if(_this.walkCounter == 0){
         var direction = Math.floor(Math.random()*4)
         if(direction == 0){
-            _this.vel = 0
-            _this.vel = _this.speed
+            _this.yvel = 0
+            _this.xvel = _this.speed
         }
         else if(direction == 1){
-            _this.vel = 0
-            _this.vel = -_this.speed
+            _this.yvel = 0
+            _this.xvel = -_this.speed
         }
         else if(direction == 2){
-            _this.vel = 0
-            _this.vel = _this.speed
+            _this.xvel = 0
+            _this.yvel = _this.speed
         }
         else if(direction == 3){
-            _this.vel = 0
-            _this.vel = -_this.speed
+            _this.xvel = 0
+            _this.yvel = -_this.speed
         }
-        _this.randomWalk(_this)
-    },1000)
+        else if(direction == 4){
+            _this.xvel = 0
+            _this.yvel = 0
+        }
+        _this.walkCounter = 30
+    }
+}
+
+
+function reAggro(_this,players){
+    _this.aggroTimer -= 1
+    if(_this.aggroTimer == 0){
+        _this.target = findClosest(_this.x,_this.y,players)[1]
+        _this.aggroTimer = 30
+    }
 }
 
 exports.enemies = {

@@ -13,17 +13,12 @@ var PORT = process.env.PORT || 4040;
 
 
 var players = {};
-var enemyList = {
-    '0': {
-        id: 0,
-        x: 400,
-        y: 400,
-        health: 3,
-    }
-};
+var enemyList = {};
 
-enemyList[0] = new enemies.Tier1Melee(200,200,3,0)
-
+for(var i=0; i<3; i++){
+    enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
+}
+console.log(enemyList)
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server
@@ -66,11 +61,11 @@ io.on('connection', function (socket) {
       });
 
     socket.on('enemyHit', function(enemyID){
-        if(enemies[enemyID]){
+        if(enemyList[enemyID]){
 
-            enemies[enemyID].health -= 1;
-            if(enemies[enemyID].health <= 0){
-                delete enemies[enemyID]
+            enemyList[enemyID].health -= 1;
+            if(enemyList[enemyID].health <= 0){
+                delete enemyList[enemyID]
                 socket.emit('enemyDeath',enemyID)
                 socket.broadcast.emit('enemyDeath',enemyID)
             }
@@ -79,12 +74,17 @@ io.on('connection', function (socket) {
 });
 
 function updateEnemy(){
+    //Called every frame
     setTimeout(function(){
-        enemyList[0].update(players)
+        for(key in enemyList){
+            enemyList[key].update(players)
+        }
         io.emit('updateEnemies',enemyList)
         updateEnemy()
     },33)
 }
+
+
 
 updateEnemy()
 
