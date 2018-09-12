@@ -7,30 +7,27 @@ var io = require('socket.io').listen(server);
 
 var collisionMap = require('./public/assets/tilemap/Map1.json')
 var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
+var floors = require('./serverscripts/floors')
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
-var enemyList = {
-    '0': {
-        id: 0,
-        x: 400,
-        y: 400,
-        health: 3,
-    }
-};
+var scene = 'floor1'
+var enemyList = floors[scene].enemyList;
+var playerSpawnX = floors[scene].playerSpawnX
+var playerSpawnY = floors[scene].playerSpawnY
 
-enemyList[0] = new enemies.Tier1Melee(200,200,3,0)
-
+// for(var i=0; i<3; i++){
+//     enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
+// }
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server
 
-app.get('/', function (req, res) {
-    console.log('file sent')
-    res.sendFile(__dirname + '/index.html');
+app.get('*', function (req, res) {
+    res.sendFile(__dirname + '/public/index.html');
     
   });
 
@@ -40,13 +37,16 @@ io.on('connection', function (socket) {
     // create a new player and add it to our players object
     players[socket.id] = {
         rotation: 0,
-        x: 160,
-        y: 160,
+        x: playerSpawnX,
+        y: playerSpawnY,
         playerId: socket.id,
+        nextFloor: false,
     };
     // send the players object to the new player
     socket.emit('currentPlayers', players);
+    // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
+    // send the current scene to the new player
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
@@ -58,33 +58,59 @@ io.on('connection', function (socket) {
         // emit a message to all players to remove this player
         io.emit('disconnect', socket.id);
     });
+
     socket.on('playerMovement', function (movementData) {
         players[socket.id].x = movementData.x;
         players[socket.id].y = movementData.y;
+        players[socket.id].rotation = movementData.rotation;
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
       });
 
     socket.on('enemyHit', function(enemyID){
-        if(enemies[enemyID]){
+        if(enemyList[enemyID]){
 
-            enemies[enemyID].health -= 1;
-            if(enemies[enemyID].health <= 0){
-                delete enemies[enemyID]
+            enemyList[enemyID].health -= 1;
+            if(enemyList[enemyID].health <= 0){
+                delete enemyList[enemyID]
                 socket.emit('enemyDeath',enemyID)
                 socket.broadcast.emit('enemyDeath',enemyID)
             }
         }
     })
+
+
+    socket.on('floorChange', function(scene,id){
+        //Check if all players are attempting to change floors
+        var change = true
+        players[id].floorChange = true
+        for(id in players){
+            if (players[id].floorChange != true){
+                change = false
+                break
+            }
+        }
+        if(change == true){
+            enemyList = floors[scene].enemyList
+            playerSpawnX = floors[scene].playerSpawnX
+            playerSpawnY = floors[scene].playerSpawnY
+            io.emit('currentScene', scene)
+        }
+    })
 });
 
 function updateEnemy(){
+    //Called every frame
     setTimeout(function(){
-        enemyList[0].update(players)
+        for(key in enemyList){
+            enemyList[key].update(players)
+        }
         io.emit('updateEnemies',enemyList)
         updateEnemy()
     },33)
 }
+
+
 
 updateEnemy()
 
@@ -93,8 +119,6 @@ server.listen(PORT, function() {
   // Log (server-side) when our server has started
   console.log("Server listening on: http://localhost:" + PORT);
 });
-
-
 
 ///INCOMPLETE 
 ///PORTING THE JSON COLLISION INFO TO THE SERVER///

@@ -33,3 +33,19 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
 
 ## Setting up phaser in node
 https://medium.com/@16patsle/running-phaser-3-on-the-server-4c0d09ffd5e6
+
+## Creating an Enemy
+* Add enemies as a constructor in enemiesServer.js
+* Use Tier1Melee as a template
+* the update() method is called at a tickrate of 30fps
+
+* Near the end of update:
+    this.x += this.xvel
+    this.y += this.yvel
+    
+* Is called. The script should affect the velocity/acceleration of the enemy and then the position is updated based on that.
+
+* Some possible useful functions are added at the end such as
+    * angleBetween
+    * unitVector
+    * I should add a custom tween where in it follows the arc of the function provided with time as a parameter
