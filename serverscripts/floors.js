@@ -13,4 +13,12 @@ var floor1 = {
     playerSpawnY: 300,
 }
 
-module.exports.floor1 = floor1
+var floor2 = {
+    enemyList: [new enemies.Tier1Melee(300,240,3,0)],
+    playerSpawnX: 320,
+    playerSpawnY: 32,
+}
+
+module.exports = {
+    floor1: floor1,
+    floor2: floor2}

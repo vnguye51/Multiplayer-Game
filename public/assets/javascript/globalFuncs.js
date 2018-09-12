@@ -175,6 +175,10 @@ function sockets() {
         }
     });
 
+    _this.socket.on('currentScene',function(scene){
+        changeScene(scene)
+    })
+
     //newPlayer is sent when a new player connects to the server
     //Adds that player to the game
     _this.socket.on('newPlayer', function (playerInfo) {

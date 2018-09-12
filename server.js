@@ -7,14 +7,17 @@ var io = require('socket.io').listen(server);
 
 var collisionMap = require('./public/assets/tilemap/Map1.json')
 var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
-var floor1 = require('./serverscripts/floors').floor1
+var floors = require('./serverscripts/floors')
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
-var enemyList = floor1.enemyList;
+var scene = 'floor1'
+var enemyList = floors[scene].enemyList;
+var playerSpawnX = floors[scene].playerSpawnX
+var playerSpawnY = floors[scene].playerSpawnY
 
 // for(var i=0; i<3; i++){
 //     enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
@@ -34,13 +37,16 @@ io.on('connection', function (socket) {
     // create a new player and add it to our players object
     players[socket.id] = {
         rotation: 0,
-        x: 300,
-        y: 300,
+        x: playerSpawnX,
+        y: playerSpawnY,
         playerId: socket.id,
+        nextFloor: false,
     };
     // send the players object to the new player
     socket.emit('currentPlayers', players);
+    // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
+    // send the current scene to the new player
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
@@ -72,10 +78,24 @@ io.on('connection', function (socket) {
             }
         }
     })
-    socket.on('floorChange', function(scene){
-        socket.emit('currentPlayers', players);
-        console.log('changing to ' + scene)
 
+
+    socket.on('floorChange', function(scene,id){
+        //Check if all players are attempting to change floors
+        var change = true
+        players[id].floorChange = true
+        for(id in players){
+            if (players[id].floorChange != true){
+                change = false
+                break
+            }
+        }
+        if(change == true){
+            enemyList = floors[scene].enemyList
+            playerSpawnX = floors[scene].playerSpawnX
+            playerSpawnY = floors[scene].playerSpawnY
+            io.emit('currentScene', scene)
+        }
     })
 });
 

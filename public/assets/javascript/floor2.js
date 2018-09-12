@@ -67,7 +67,13 @@ class floor2 extends Phaser.Scene {
 
         objectLayer = map.createStaticLayer('Objects',tileset,0,0)
         objectLayer.setCollisionByExclusion([-1,21,37])
-        objectLayer.setTileIndexCallback([21],function(){changeScene('floor1')},this)
+        objectLayer.setTileIndexCallback([21],function(){
+            _this.player.stats.control = false
+            _this.player.body.velocity.x = 0
+            _this.player.body.velocity.y = 0
+            _this.player.visible = false
+            _this.socket.emit('floorChange','floor1',_this.socket.id)
+        },this)
 
         objectLayer.setDepth(-1)
 
@@ -94,12 +100,6 @@ class floor2 extends Phaser.Scene {
 
         this.input.on('pointerdown',function(){
             meleeAttack()
-        })
-        this.input.keyboard.on('keydown_T',function(event){
-            _this.socket.disconnect()
-            _this.player = null
-            _this.scene.start('floor1')
-            // _this.socket.emit('floorChange','floor1')
         })
 
     }
