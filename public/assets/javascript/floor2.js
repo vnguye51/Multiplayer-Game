@@ -1,10 +1,10 @@
 
 
-class floor1 extends Phaser.Scene {
+class floor2 extends Phaser.Scene {
 
     constructor ()
     {
-        super({ key: 'floor1' });
+        super({ key: 'floor2' });
     }
 
     preload () //preload occurs prior to the scene(game) being instantiated
@@ -20,7 +20,7 @@ class floor1 extends Phaser.Scene {
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
-        this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')
+        this.load.tilemapTiledJSON('floor2','assets/tilemap/Floor2.json')
     
     }
     
@@ -51,7 +51,7 @@ class floor1 extends Phaser.Scene {
         
 
         ////TILEMAP DATA
-        map = this.make.tilemap({key: 'map'}) //Create tilemap
+        map = this.make.tilemap({key: 'floor2'}) //Create tilemap
         var tileset = map.addTilesetImage('cave') //Use the tileset(must be the same name as the one in the Tiled editor)
 
         //Create the layers
@@ -66,7 +66,7 @@ class floor1 extends Phaser.Scene {
 
 
         objectLayer = map.createStaticLayer('Objects',tileset,0,0)
-        objectLayer.setCollisionByExclusion([-1,69,85,100,101,102])
+        objectLayer.setCollisionByExclusion([-1,21,37])
         objectLayer.setDepth(-1)
 
         //Player Inputs go here
@@ -94,11 +94,11 @@ class floor1 extends Phaser.Scene {
             meleeAttack()
         })
         this.input.keyboard.on('keydown_T',function(event){
-            _this.socket.disconnect()
-            _this.scene.start('floor2')
-            // _this.socket.emit('floorChange','floor2')
-
+            game.socket.disconnect()
+            _this.scene.start('floor1')
+            // _this.socket.emit('floorChange','floor1')
         })
+
     }
     
     update() //Update is called every frame
@@ -154,7 +154,7 @@ class floor1 extends Phaser.Scene {
     
             //If player position changed
             if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y || rotation !== this.player.oldPosition.rotation)) {
-                game.socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
+                this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
             }
             
             // save old position data

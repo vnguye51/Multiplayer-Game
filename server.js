@@ -33,8 +33,8 @@ io.on('connection', function (socket) {
     // create a new player and add it to our players object
     players[socket.id] = {
         rotation: 0,
-        x: 160,
-        y: 160,
+        x: 300,
+        y: 300,
         playerId: socket.id,
     };
     // send the players object to the new player
@@ -53,7 +53,6 @@ io.on('connection', function (socket) {
     });
 
     socket.on('playerMovement', function (movementData) {
-        console.log(movementData)
         players[socket.id].x = movementData.x;
         players[socket.id].y = movementData.y;
         players[socket.id].rotation = movementData.rotation;
@@ -71,6 +70,11 @@ io.on('connection', function (socket) {
                 socket.broadcast.emit('enemyDeath',enemyID)
             }
         }
+    })
+    socket.on('floorChange', function(scene){
+        socket.emit('currentPlayers', players);
+        console.log('changing to ' + scene)
+
     })
 });
 
