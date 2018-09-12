@@ -15,7 +15,6 @@ var config = {
 
 // var socket = io()
 var game = new Phaser.Game(config);
-sockets()
 //Define global variables(might want to move them into the classes later)
 
 var enemies 

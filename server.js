@@ -7,17 +7,18 @@ var io = require('socket.io').listen(server);
 
 var collisionMap = require('./public/assets/tilemap/Map1.json')
 var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
+var floor1 = require('./serverscripts/floors').floor1
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
-var enemyList = {};
+var enemyList = floor1.enemyList;
 
-for(var i=0; i<3; i++){
-    enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
-}
+// for(var i=0; i<3; i++){
+//     enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
+// }
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server

@@ -12,7 +12,6 @@ class Tier1Melee extends Phaser.Physics.Arcade.Sprite {
     create(){
         
         this.setSize(12,12)
-        this.target = null
     }
 
 }

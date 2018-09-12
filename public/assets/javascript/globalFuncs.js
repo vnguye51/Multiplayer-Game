@@ -1,4 +1,10 @@
 
+function changeScene(scene) {
+    _this.socket.disconnect();
+    _this.player = null;
+    _this.scene.start(scene);
+}
+
 
 function attack(player){ // Called when the player presses spacebar
     var attack = _this.physics.add.sprite(80,80,'playerAttack')
@@ -154,13 +160,13 @@ function constrainReticle(reticle)
 
 function sockets() {
     //Attach socket to the game for ease of access
-
+    _this.socket = io()
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client
-    game.socket.on('currentPlayers', function (players) {
+    _this.socket.on('currentPlayers', function (players) {
         var ids = Object.keys(players)
         for(var i = 0; i< ids.length; i++){
-            if (players[ids[i]].playerId === game.socket.id) {
+            if (players[ids[i]].playerId === _this.socket.id) {
                 addPlayer(_this, players[ids[i]]); //creates _this.player
               }
             else{
@@ -171,13 +177,13 @@ function sockets() {
 
     //newPlayer is sent when a new player connects to the server
     //Adds that player to the game
-    game.socket.on('newPlayer', function (playerInfo) {
+    _this.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayer(_this, playerInfo);
     });
 
     //currentEnemies is sent when you connect to the server
     //Grabs the list of current enemies and adds them to the client
-    game.socket.on('currentEnemies', function (enemies) {
+    _this.socket.on('currentEnemies', function (enemies) {
         var ids = Object.keys(enemies)
 
         for (var i = 0; i<ids.length; i++) {
@@ -187,7 +193,7 @@ function sockets() {
 
     //updateEnemies is sent every frame(30fps)
     //Updates the position and logic of every enemy in the game
-    game.socket.on('updateEnemies', function (enemies) {
+    _this.socket.on('updateEnemies', function (enemies) {
         for (id in enemies) {
             updateEnemy(_this, enemies[id]);
         }
@@ -195,13 +201,13 @@ function sockets() {
 
     //enemyDeath is sent whenever an enemy dies
     //Removes the enemy from your game
-    game.socket.on('enemyDeath', function (enemyID) {
+    _this.socket.on('enemyDeath', function (enemyID) {
         removeEnemy(_this, enemyID);
     });
 
     //disconnect is sent whenever another player's connection is lost
     //Removes that player from the game
-    game.socket.on('disconnect', function (playerId) {
+    _this.socket.on('disconnect', function (playerId) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             if (playerId === otherPlayer.playerId) {
                 otherPlayer.destroy();
@@ -210,7 +216,7 @@ function sockets() {
     });
 
     //Whenever a player moves or changes rotation on the server update it in the client
-    game.socket.on('playerMoved', function (playerInfo) {
+    _this.socket.on('playerMoved', function (playerInfo) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
             if (playerInfo.playerId === otherPlayer.playerId) {
