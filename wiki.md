@@ -48,3 +48,4 @@ https://medium.com/@16patsle/running-phaser-3-on-the-server-4c0d09ffd5e6
 * Some possible useful functions are added at the end such as
     * angleBetween
     * unitVector
+    * I should add a custom tween where in it follows the arc of the function provided with time as a parameter

@@ -18,14 +18,12 @@ var enemyList = {};
 for(var i=0; i<3; i++){
     enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
 }
-console.log(enemyList)
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server
 
-app.get('/', function (req, res) {
-    console.log('file sent')
-    res.sendFile(__dirname + '/index.html');
+app.get('*', function (req, res) {
+    res.sendFile(__dirname + '/public/index.html');
     
   });
 
@@ -53,9 +51,12 @@ io.on('connection', function (socket) {
         // emit a message to all players to remove this player
         io.emit('disconnect', socket.id);
     });
+
     socket.on('playerMovement', function (movementData) {
+        console.log(movementData)
         players[socket.id].x = movementData.x;
         players[socket.id].y = movementData.y;
+        players[socket.id].rotation = movementData.rotation;
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
       });
@@ -93,8 +94,6 @@ server.listen(PORT, function() {
   // Log (server-side) when our server has started
   console.log("Server listening on: http://localhost:" + PORT);
 });
-
-
 
 ///INCOMPLETE 
 ///PORTING THE JSON COLLISION INFO TO THE SERVER///
