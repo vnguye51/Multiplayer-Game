@@ -2,7 +2,27 @@
 //Constructor for basic enemy
 //Wanders around until a player enters its radius
 //Then chases that player
+
+function joinCollisionLayers(layers){
+    var collisionArray = []
+    for(var i = 0; i < layers[0].data.length; i++){
+        var found = false
+        for(j = 0; j < layers.length; j++){
+            if(layers[j].data[i] != 0){
+                collisionArray.push(1)   
+                found = true
+                break
+            }
+        }
+        if(!found){
+            collisionArray.push(0)
+        }
+    }
+    return collisionArray
+}
+
 var collisionMap = require('../../tilemap/Map1.json')
+var collisionArray = (joinCollisionLayers([collisionMap.layers[1],collisionMap.layers[2]]))
 
 Tier1Melee = function(x,y,health,id){   
     this.x = x
@@ -19,10 +39,6 @@ Tier1Melee = function(x,y,health,id){
 
 
     this.update = function(players){
-        if(place_meeting(this.x,this.y,16,16,collisionMap)){
-            console.log('!collision')
-        }
-
         if(Object.keys(players).length!=0){
             if(this.state == 'seeking'){
                 var data = findClosest(this.x,this.y,players)
@@ -44,8 +60,10 @@ Tier1Melee = function(x,y,health,id){
                     this.yvel = uvec[1]*this.speed
                 }
             }
-            this.x += this.xvel
-            this.y += this.yvel
+
+            var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
+            this.x = finalPos[0]
+            this.y = finalPos[1]
         }
     }
 }
@@ -126,7 +144,7 @@ function reAggro(_this,players){
     }
 }
 
-function place_meeting(x,y, width, height,map){
+function place_meeting(x,y, width, height,map,collisionArray){
     //Algorithm:
     //Define a rectangle using startpos(x,y) and width and height
     //A rectangle is defined by four points (x0,y0),(x0,y1),(x1,y0),(x1,y1)
@@ -143,17 +161,17 @@ function place_meeting(x,y, width, height,map){
     xcorners = [x0,x1]
     ycorners = [y0,y1]
 
-    function queryTile(x,y,map){
+    function queryTile(x,y,map,collisionArray){
         var tiledX = Math.floor(x/map.tilewidth);
         var tiledY = Math.floor(y/map.tileheight);
         tilePos = tiledX + tiledY * (map.width)
-        return map.layers[2].data[tilePos] 
+        return collisionArray[tilePos] 
     }
 
     // Check corners
     for(var i = 0; i < xcorners.length; i++){
         for(var j = 0; j < ycorners.length; j++){
-            var tile = queryTile(xcorners[i],ycorners[j],map)
+            var tile = queryTile(xcorners[i],ycorners[j],map,collisionArray)
             if(tile != null && tile != 0){
                 return true
             }
@@ -163,7 +181,7 @@ function place_meeting(x,y, width, height,map){
     // Check positions inside the object
     for(var x = x0; x<x1; x+=map.tilewidth){
         for (var y = y0; y<y1; y+=map.tileheight){
-            var tile = queryTile(x,y,map)
+            var tile = queryTile(x,y,map,collisionArray)
             if(tile != null && tile != 0){
                 return tile
             }
@@ -173,7 +191,25 @@ function place_meeting(x,y, width, height,map){
     return false
 }
 
-
+function queryCollisions(width,height,xpos,ypos,xvel,yvel,map,collisionArray){
+    //Horizontal Collision
+    if (place_meeting(xpos+xvel,ypos,width,height,map,collisionArray)){	
+        while(!place_meeting(xpos+xvel,ypos,width,height,map,collisionArray)){
+            xpos += Math.sign(xvel);
+        }
+        xvel = 0
+    }
+    xpos += xvel;
+    //Vertical Collision
+    if (place_meeting(xpos,ypos+yvel,width,height,map,collisionArray)){	
+        while(!place_meeting(xpos,ypos+yvel,width,height,map,collisionArray)){
+            ypos += Math.sign(yvel);
+        }
+        yvel = 0
+    }
+    ypos += yvel
+    return [xpos,ypos]
+} 
 
 exports.enemies = {
     Tier1Melee: Tier1Melee
