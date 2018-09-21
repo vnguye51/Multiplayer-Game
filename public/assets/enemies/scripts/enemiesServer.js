@@ -2,6 +2,8 @@
 //Constructor for basic enemy
 //Wanders around until a player enters its radius
 //Then chases that player
+var collisionMap = require('../../tilemap/Map1.json')
+
 Tier1Melee = function(x,y,health,id){   
     this.x = x
     this.y = y
@@ -17,6 +19,10 @@ Tier1Melee = function(x,y,health,id){
 
 
     this.update = function(players){
+        if(place_meeting(this.x,this.y,16,16,collisionMap)){
+            console.log('!collision')
+        }
+
         if(Object.keys(players).length!=0){
             if(this.state == 'seeking'){
                 var data = findClosest(this.x,this.y,players)
@@ -120,6 +126,56 @@ function reAggro(_this,players){
     }
 }
 
+function place_meeting(x,y, width, height,map){
+    //Algorithm:
+    //Define a rectangle using startpos(x,y) and width and height
+    //A rectangle is defined by four points (x0,y0),(x0,y1),(x1,y0),(x1,y1)
+    //Do a nested for loop through starting at (x0,y0) up to (x1,y1) with steps of the tilemap width/height
+    //If any tiles are found(nonzero) then return true
+    //If the loop completes return  false
+
+
+    //Define the rectangle
+    var x0 = x-Math.floor(width/2);
+    var y0 = y-Math.floor(height/2);
+    var x1 = x + Math.floor(width/2);
+    var y1 = y + Math.floor(height/2);
+    xcorners = [x0,x1]
+    ycorners = [y0,y1]
+
+    function queryTile(x,y,map){
+        var tiledX = Math.floor(x/map.tilewidth);
+        var tiledY = Math.floor(y/map.tileheight);
+        tilePos = tiledX + tiledY * (map.width)
+        return map.layers[2].data[tilePos] 
+    }
+
+    // Check corners
+    for(var i = 0; i < xcorners.length; i++){
+        for(var j = 0; j < ycorners.length; j++){
+            var tile = queryTile(xcorners[i],ycorners[j],map)
+            if(tile != null && tile != 0){
+                return true
+            }
+        }
+    }
+
+    // Check positions inside the object
+    for(var x = x0; x<x1; x+=map.tilewidth){
+        for (var y = y0; y<y1; y+=map.tileheight){
+            var tile = queryTile(x,y,map)
+            if(tile != null && tile != 0){
+                return tile
+            }
+        }
+    }
+
+    return false
+}
+
+
+
 exports.enemies = {
     Tier1Melee: Tier1Melee
 }
+
