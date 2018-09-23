@@ -103,7 +103,7 @@ function addEnemy(_this, enemyInfo){
 
 function updateEnemy(_this,enemyInfo){
     enemies.getChildren().forEach(function(enemy){
-        if(enemy.id == enemyInfo.id){
+        if(enemyInfo && enemy.id == enemyInfo.id){
             enemy.x = enemyInfo.x
             enemy.y = enemyInfo.y
         }
@@ -199,6 +199,7 @@ function sockets() {
     //Updates the position and logic of every enemy in the game
     _this.socket.on('updateEnemies', function (enemies) {
         for (id in enemies) {
+            
             updateEnemy(_this, enemies[id]);
         }
     });

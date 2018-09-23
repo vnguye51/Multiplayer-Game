@@ -69,10 +69,8 @@ io.on('connection', function (socket) {
 
     socket.on('enemyHit', function(enemyID){
         if(enemyList[enemyID]){
-
             enemyList[enemyID].health -= 1;
             if(enemyList[enemyID].health <= 0){
-                delete enemyList[enemyID]
                 socket.emit('enemyDeath',enemyID)
                 socket.broadcast.emit('enemyDeath',enemyID)
             }

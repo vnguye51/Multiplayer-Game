@@ -26,7 +26,6 @@ class floor1 extends Phaser.Scene {
     
     create () //Occurs when the scene is instantiated
     {
-        console.log('create!')
         _this = this
         //Assigns the input keys. 
         enemies = this.physics.add.group()
