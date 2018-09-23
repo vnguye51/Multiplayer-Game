@@ -143,27 +143,48 @@ function queryCollisions(width,height,xpos,ypos,xvel,yvel,map){
 } 
 
 function place_meeting(x,y, width, height,map){
-    var queryX = []
-    var queryY = []
-    var x = x-Math.floor(width/2)
-    var y = y-Math.floor(height/2)
-    while(x <= map.tilewidth){
-        var tiledposx = floor(x/map.tilewidth)
-        queryX.push(tiledposx)
-        x += map.tilewidth
-    }
-    while(y <= map.tilewidth){
-        var tiledposy = floor(y/map.tileheight)
-        queryY.push(tiledposy)
+    //Algorithm:
+    //Define a rectangle using startpos(x,y) and width and height
+    //A rectangle is defined by four points (x0,y0),(x0,y1),(x1,y0),(x1,y1)
+    //Do a nested for loop through starting at (x0,y0) up to (x1,y1) with steps of the tilemap width/height
+    //If any tiles are found(nonzero) then return true
+    //If the loop completes return  false
+
+
+    //Define the rectangle
+    var x0 = x-Math.floor(width/2);
+    var y0 = y-Math.floor(height/2);
+    var x1 = x + Math.floor(width/2);
+    var y1 = y + Math.floor(height/2);
+    xcorners = [x0,x1]
+    ycorners = [y0,y1]
+
+    function queryTile(x,y,map){
+        var tiledX = Math.floor(x/map.tilewidth);
+        var tiledY = Math.floor(y/map.tileheight);
+        tilePos = tiledX + tiledY * (map.width)
+        return map.layers[2].data[tilePos] 
     }
 
-    for(var i = 0; i<queryX.length; i++){
-        for (var j = 0; i<queryY.length; j++){
-            var tiledpos = queryY[j]*map.width + queryX[j]
-            if(map.data.layers[0].data[tiledpos] != 0){
-                return true  
+    // Check corners
+    for(var i = 0; i < xcorners.length; i++){
+        for(var j = 0; j < ycorners.length; j++){
+            var tile = queryTile(xcorners[i],ycorners[j],map)
+            if(tile != null && tile != 0){
+                return true
             }
         }
     }
+
+    // Check positions inside the object
+    for(var x = x0; x<x1; x+=map.tilewidth){
+        for (var y = y0; y<y1; y+=map.tileheight){
+            var tile = queryTile(x,y,map)
+            if(tile != null && tile != 0){
+                return tile
+            }
+        }
+    }
+
     return false
 }
