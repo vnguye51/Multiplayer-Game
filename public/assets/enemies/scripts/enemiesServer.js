@@ -34,6 +34,7 @@ Tier1Melee = function(x,y,health,id){
     this.speed = 1
     this.state = 'seeking'
     this.target = null
+    this.animation = 'lancerLeft'
     this.walkCounter = 30
     this.aggroTimer = 30
 
@@ -53,9 +54,25 @@ Tier1Melee = function(x,y,health,id){
                 }
             }
             else if(this.state == 'aggro'){
-                if(this.target){
+                if(this.target != null){
                     reAggro(this,players)
                     var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                    if(Math.abs(uvec[0]) > Math.abs(uvec[1])){
+                        if(uvec[0] > 0){
+                            this.animation = 'lancerRight'
+                        }
+                        else{
+                            this.animation = 'lancerLeft'
+                        }
+                    }
+                    else{
+                        if(uvec[1] > 0){
+                            this.animation = 'lancerDown'
+                        }
+                        else{
+                            this.animation = 'lancerUp'
+                        }
+                    }
                     this.xvel = uvec[0]*this.speed
                     this.yvel = uvec[1]*this.speed
                 }
@@ -114,18 +131,25 @@ function randomWalk(_this){
         if(direction == 0){
             _this.yvel = 0
             _this.xvel = _this.speed
+            _this.animation = 'lancerRight'
         }
         else if(direction == 1){
             _this.yvel = 0
             _this.xvel = -_this.speed
+            _this.animation = 'lancerLeft'
+
         }
         else if(direction == 2){
             _this.xvel = 0
             _this.yvel = _this.speed
+            _this.animation = 'lancerDown'
+
         }
         else if(direction == 3){
             _this.xvel = 0
             _this.yvel = -_this.speed
+            _this.animation = 'lancerUp'
+
         }
         else if(direction == 4){
             _this.xvel = 0

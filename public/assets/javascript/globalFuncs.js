@@ -8,24 +8,42 @@ function changeScene(scene) {
 
 function attack(player){ // Called when the player presses spacebar
     var attack = _this.physics.add.sprite(80,80,'playerAttack')
+
     setTimeout(function(){
         attack.destroy()
     },200)
 }
 
 function meleeAttack(){
-    var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
-    var attackX = _this.player.x + Math.cos(theta)*20
-    var attackY = _this.player.y + Math.sin(theta)*20
-    var attack = _this.physics.add.sprite(attackX,attackY,'playerMeleeAttack')
-    attack.rotation = _this.player.rotation + Math.PI/2
-    var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
-        enemyHit(attack,enemy,attackCollider)
-    }) //At some point this collider should be moved to the global scope and never destroyed
+    // var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
+    // var attackX = _this.player.x + Math.cos(theta)*20
+    // var attackY = _this.player.y + Math.sin(theta)*20
+    var dir = _this.player.direction
+    _this.player.stats.control = false
+    _this.player.setVelocityX(0)
+    _this.player.setVelocityY(0)
+    if(dir == 'left'){
+        _this.player.anims.play('attackLeft',true)
+    }
+    else if(dir == 'right'){
+        _this.player.anims.play('attackRight',true)
+    }
+    else if(dir == 'down'){
+        _this.player.anims.play('attackDown',true)
+    }
+    else{
+        _this.player.anims.play('attackUp',true)
+    }
+
+
+    // var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
+    //     enemyHit(attack,enemy,attackCollider)
+     //At some point this collider should be moved to the global scope and never destroyed
     setTimeout(function(){
-        attack.destroy()
+
+        _this.player.stats.control = true
         
-    },200)
+    },500)
 }
 
 function enemyHit(attack,enemy,collider){
@@ -72,7 +90,8 @@ function hitByEnemy(player, enemy){
 }
 
 function addPlayer(_this, playerInfo){
-    _this.player = _this.physics.add.image(playerInfo.x, playerInfo.y, 'player');
+    _this.player = _this.physics.add.sprite(playerInfo.x, playerInfo.y, 'player');
+    _this.player.direction = 'left'
     _this.player.setSize(10,10)
     _this.cameras.main.startFollow(_this.player);
     _this.physics.add.collider(wallLayer,_this.player) //Create collision interaction
@@ -106,6 +125,12 @@ function updateEnemy(_this,enemyInfo){
         if(enemyInfo && enemy.id == enemyInfo.id){
             enemy.x = enemyInfo.x
             enemy.y = enemyInfo.y
+            if(enemy.animation == 'idle'){
+                enemy.anims.stop()
+            }
+            else{
+                enemy.anims.play(enemyInfo.animation,true)
+            }
         }
     })
 }

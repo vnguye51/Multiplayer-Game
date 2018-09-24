@@ -11,12 +11,12 @@ class floor1 extends Phaser.Scene {
     {
         //Load player assets
         this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
-        this.load.image('player','assets/CharacterSprites/Player_arrow.png')
+        this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
         this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
         this.load.image('playerMeleeAttack', 'assets/CharacterSprites/MeleeAttack.png')
         
         //Load enemy assets
-        this.load.image('enemy','assets/enemies/sprites/Enemy.png')
+        this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
@@ -34,7 +34,8 @@ class floor1 extends Phaser.Scene {
             'up': Phaser.Input.Keyboard.KeyCodes.W, 
             'down': Phaser.Input.Keyboard.KeyCodes.S,
             'left': Phaser.Input.Keyboard.KeyCodes.A,
-            'right': Phaser.Input.Keyboard.KeyCodes.D });
+            'right': Phaser.Input.Keyboard.KeyCodes.D,
+            'attack': Phaser.Input.Keyboard.KeyCodes.SPACE });
         
         this.otherPlayers = this.physics.add.group()
 
@@ -95,8 +96,84 @@ class floor1 extends Phaser.Scene {
             }
         }, this);
 
-        this.input.on('pointerdown',function(){
-            meleeAttack()
+        ///ANIMATIONS///
+
+        ///Player Animations///
+        this.anims.create({
+            key: 'up',
+            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'down',
+            frames: this.anims.generateFrameNumbers('player', { start: 8, end: 11 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'attackUp',
+            frames: this.anims.generateFrameNumbers('player', {start: 12,end: 12}),
+            frameRate: 3,
+        })
+
+        this.anims.create({
+            key: 'attackLeft',
+            frames: this.anims.generateFrameNumbers('player', {start: 13,end: 13}),
+            frameRate: 3,
+        })
+
+        this.anims.create({
+            key: 'attackRight',
+            frames: this.anims.generateFrameNumbers('player', {start: 13,end: 13}),
+            frameRate: 3,
+        })
+
+        this.anims.create({
+            key: 'attackDown',
+            frames: this.anims.generateFrameNumbers('player', {start: 14,end: 14}),
+            frameRate: 3,
+        })
+
+    
+        //Enemy Animations
+        this.anims.create({
+            key: 'lancerDown',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerRight',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 4, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerLeft',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 8, end: 11 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerUp',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 12, end: 15 }),
+            frameRate: 10,
+            repeat: -1
         })
     }
     
@@ -104,33 +181,47 @@ class floor1 extends Phaser.Scene {
     {   // Only run update code once the player is connected
         if(this.player){
             if(this.player.stats.control == true){
-    
+
                 if (this.cursors.left.isDown){
                     this.player.setVelocityX(-120);
-            
+                    this.player.anims.play('left',true)
+                    this.player.flipX = true
+                    this.player.direction = 'left'
                 }
                 else if (this.cursors.right.isDown){
                     this.player.setVelocityX(120);
-            
+                    this.player.anims.play('right',true)
+                    this.player.flipX = false
+                    this.player.direction = 'right'
+
                 }
                 else{
                     this.player.setVelocityX(0);
                 }
                 if (this.cursors.up.isDown){
                     this.player.setVelocityY(-120);
-            
+                    this.player.anims.play('up',true)      
+                    this.player.direction = 'up'      
                 }
                 else if (this.cursors.down.isDown){
                     this.player.setVelocityY(120);
-            
+                    this.player.anims.play('down',true)
+                    this.player.direction = 'down'      
+
                 }
                 else{
                     this.player.setVelocityY(0);
                 }
+                if(!this.cursors.left.isDown && !this.cursors.right.isDown && !this.cursors.up.isDown && !this.cursors.down.isDown){
+                    this.player.anims.stop()
+                }
+                if(this.cursors.attack.isDown){
+                    meleeAttack()
+                }
             }
             
             //player faces reticle
-            this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
+            // this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
             var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
     
             // Makes reticle move with player
