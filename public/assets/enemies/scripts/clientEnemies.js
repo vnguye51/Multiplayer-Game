@@ -5,7 +5,7 @@ class Tier1Melee extends Phaser.Physics.Arcade.Sprite {
         //Super grabs the constructor from the original class that this script extends
         super(scene, x, y, health,id);
 
-        this.setTexture('enemy');
+        // this.setTexture('bat');
         this.setPosition(x, y);
         this.id = id
     }

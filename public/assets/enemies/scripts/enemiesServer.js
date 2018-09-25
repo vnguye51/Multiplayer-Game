@@ -119,6 +119,96 @@ Tier1Melee = function(x,y,health,id){
     }
 }
 
+Bat = function (x,y,health,id){
+    this.x = x
+    this.y = y
+    this.xvel = 0
+    this.yvel = 0
+    this.health = health
+    this.id = id
+    this.speed = 2
+    this.state = 'seeking'
+    this.target = null
+    this.animation = 'bat'
+    this.aggroTimer = 60
+    this.control = true
+    this.knockbacked = false
+    this.knocbackCounter = 5
+    this.cooldownTimer = 90
+    this.knockback = function(dir){
+        this.control = false
+        this.xvel = 5
+        this.yvel = 0
+        this.knocbackCounter = 5
+        this.knockbacked = true
+
+        if(dir == 'left'){
+            this.xvel = -5
+            this.yvel = 0
+        }
+        else if (dir == 'right'){
+            this.xvel = 5
+            this.yvel = 0
+        }
+        else if (dir == 'down'){
+            this.xvel = 0
+            this.yvel = 5
+        }
+        else{
+            this.xvel = 0
+            this.yvel = -5
+        }
+    }
+    this.update = function(players){
+        if(this.control){
+            if(Object.keys(players).length!=0){
+                if(this.state == 'seeking'){
+                    var data = findClosest(this.x,this.y,players)
+                    var candidate = data[1]
+                    var dist = data[0]
+                    if(dist<100){
+                        this.target = candidate
+                        this.targetX = candidate.x
+                        this.targetY = candidate.y
+                        this.state = 'aggro'
+                        var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                        this.xvel = uvec[0]*this.speed
+                        this.yvel = uvec[1]*this.speed
+                    }
+                }
+                else if(this.state == 'cooldown'){
+                    this.cooldownTimer -= 1
+                    if(this.cooldownTimer == 0 && this.target != null && this.target.alive){
+                        this.state = 'aggro'
+                        this.cooldownTimer = 90
+                        var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                        this.xvel = uvec[0]*this.speed
+                        this.yvel = uvec[1]*this.speed
+                    } 
+                }
+                else if(this.state == 'aggro'){                        
+                    this.aggroTimer -= 1
+                    if(this.aggroTimer == 0){
+                        this.aggroTimer = 60
+                        this.xvel = 0
+                        this.yvel = 0
+                        this.state = 'cooldown'
+                    }
+                }
+            }
+        }
+        if(this.knockbacked){
+            this.knocbackCounter -= 1
+            if (this.knocbackCounter == 0){
+                this.control = true
+                this.knockbacked = false
+            }
+        }
+        var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
+        this.x = finalPos[0]
+        this.y = finalPos[1]
+    }
+}
 
 function findClosest(x,y,players){
     //Loop through the players looking for the closest player
@@ -272,6 +362,7 @@ function queryCollisions(width,height,xpos,ypos,xvel,yvel,map,collisionArray){
 } 
 
 exports.enemies = {
-    Tier1Melee: Tier1Melee
+    Tier1Melee: Tier1Melee,
+    Bat: Bat
 }
 

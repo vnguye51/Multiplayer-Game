@@ -17,6 +17,7 @@ class floor1 extends Phaser.Scene {
         
         //Load enemy assets
         this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
+        this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
@@ -104,6 +105,13 @@ class floor1 extends Phaser.Scene {
         this.anims.create({
             key: 'lancerUp',
             frames: this.anims.generateFrameNumbers('lancer', { start: 12, end: 15 }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'bat',
+            frames: this.anims.generateFrameNumbers('bat', { start: 0, end: 5 }),
             frameRate: 10,
             repeat: -1
         })
