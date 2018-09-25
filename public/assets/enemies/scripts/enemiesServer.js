@@ -232,30 +232,8 @@ Whelp = function (x,y,health,id){
     this.knockbacked = false
     this.knocbackCounter = 5
     this.cooldownTimer = 90
-    this.knockback = function(dir){
-        this.control = false
-        this.xvel = 5
-        this.yvel = 0
-        this.knocbackCounter = 5
-        this.knockbacked = true
+    this.fireTimer = 120
 
-        if(dir == 'left'){
-            this.xvel = -5
-            this.yvel = 0
-        }
-        else if (dir == 'right'){
-            this.xvel = 5
-            this.yvel = 0
-        }
-        else if (dir == 'down'){
-            this.xvel = 0
-            this.yvel = 5
-        }
-        else{
-            this.xvel = 0
-            this.yvel = -5
-        }
-    }
     this.update = function(players){
         if(this.control){
             if(Object.keys(players).length!=0){
@@ -295,6 +273,13 @@ Whelp = function (x,y,health,id){
                         this.aggroTimer = 60
                         this.xvel = 0
                         this.yvel = 0
+                        this.state = 'fire'
+                    }
+                }
+                else if(this.state == 'fire'){
+                    this.fireTimer -= 1
+                    if(this.fireTimer == 0){
+                        this.fireTimer = 120
                         this.state = 'cooldown'
                     }
                 }

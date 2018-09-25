@@ -5,8 +5,6 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
-var collisionMap = require('./public/assets/tilemap/Map1.json')
-var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
 var floors = require('./serverscripts/floors')
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
@@ -50,7 +48,6 @@ io.on('connection', function (socket) {
     // send the current scene to the new player
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
-
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
         console.log('user disconnected');
