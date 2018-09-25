@@ -5,15 +5,6 @@ function changeScene(scene) {
     _this.scene.start(scene);
 }
 
-
-function attack(player){ // Called when the player presses spacebar
-    var attack = _this.physics.add.sprite(80,80,'playerAttack')
-
-    setTimeout(function(){
-        attack.destroy()
-    },200)
-}
-
 function meleeAttack(){
     // var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
     // var attackX = _this.player.x + Math.cos(theta)*20
@@ -24,30 +15,52 @@ function meleeAttack(){
     _this.player.setVelocityY(0)
     if(dir == 'left'){
         _this.player.anims.play('attackLeft',true)
+        var attack = _this.physics.add.sprite(_this.player.x-16,_this.player.y,'playerMeleeAttack')
+        attack.rotation = Math.PI
     }
     else if(dir == 'right'){
         _this.player.anims.play('attackRight',true)
+        var attack = _this.physics.add.sprite(_this.player.x+16,_this.player.y,'playerMeleeAttack')
+        attack.rotation = 0
     }
     else if(dir == 'down'){
         _this.player.anims.play('attackDown',true)
+        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y+16,'playerMeleeAttack')
+        attack.rotation = Math.PI/2
     }
     else{
         _this.player.anims.play('attackUp',true)
+        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y-16,'playerMeleeAttack')
+        attack.rotation = 3*Math.PI/2
     }
-
-
-    // var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
-    //     enemyHit(attack,enemy,attackCollider)
+    var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
+        enemyHit(attack,enemy,attackCollider)
+    })
      //At some point this collider should be moved to the global scope and never destroyed
     setTimeout(function(){
-
+        if(attackCollider.world){
+            attackCollider.destroy()
+        }
         _this.player.stats.control = true
-        
-    },500)
+        attack.destroy()
+        if(dir == 'left'){
+            _this.player.anims.play('left',true)
+        }
+        else if(dir == 'right'){
+            _this.player.anims.play('right',true)
+        }
+        else if(dir == 'down'){
+            _this.player.anims.play('down',true)
+        }
+        else{
+            _this.player.anims.play('up')
+        }
+    },200)
 }
 
 function enemyHit(attack,enemy,collider){
     if(collider.world){
+        ///need to change this to only destroy the collision between the enemy 
         collider.destroy()
         _this.socket.emit('enemyHit',enemy.id)
         enemy.setTint(0x00ffff)

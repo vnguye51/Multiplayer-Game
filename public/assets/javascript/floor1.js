@@ -13,7 +13,7 @@ class floor1 extends Phaser.Scene {
         this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
         this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
         this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
-        this.load.image('playerMeleeAttack', 'assets/CharacterSprites/MeleeAttack.png')
+        this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
         
         //Load enemy assets
         this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
@@ -30,6 +30,8 @@ class floor1 extends Phaser.Scene {
         //Assigns the input keys. 
         enemies = this.physics.add.group()
 
+        definePlayerAnimations(this)
+
         this.cursors = this.input.keyboard.addKeys({ 
             'up': Phaser.Input.Keyboard.KeyCodes.W, 
             'down': Phaser.Input.Keyboard.KeyCodes.S,
@@ -42,11 +44,9 @@ class floor1 extends Phaser.Scene {
         
         sockets();
 
-    
-        reticle = this.physics.add.sprite(180, 120, 'pointer');
 
         //camera
-        this.cameras.main.setSize(400, 300);
+        this.cameras.main.setSize(320, 240);
 
         
 
@@ -81,75 +81,6 @@ class floor1 extends Phaser.Scene {
             game.input.mouse.requestPointerLock();
         });
 
-        // Exit pointer lock when Q or escape (by default) is pressed.
-        this.input.keyboard.on('keydown_Q', function (event) {
-            if (game.input.mouse.locked)
-                game.input.mouse.releasePointerLock();
-        }, 0, this);
-
-        // Move reticle upon locked pointer move
-        this.input.on('pointermove', function (pointer) {
-            if (this.input.mouse.locked)
-            {
-                reticle.x += pointer.movementX;
-                reticle.y += pointer.movementY;
-            }
-        }, this);
-
-        ///ANIMATIONS///
-
-        ///Player Animations///
-        this.anims.create({
-            key: 'up',
-            frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'down',
-            frames: this.anims.generateFrameNumbers('player', { start: 8, end: 11 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'attackUp',
-            frames: this.anims.generateFrameNumbers('player', {start: 12,end: 12}),
-            frameRate: 3,
-        })
-
-        this.anims.create({
-            key: 'attackLeft',
-            frames: this.anims.generateFrameNumbers('player', {start: 13,end: 13}),
-            frameRate: 3,
-        })
-
-        this.anims.create({
-            key: 'attackRight',
-            frames: this.anims.generateFrameNumbers('player', {start: 13,end: 13}),
-            frameRate: 3,
-        })
-
-        this.anims.create({
-            key: 'attackDown',
-            frames: this.anims.generateFrameNumbers('player', {start: 14,end: 14}),
-            frameRate: 3,
-        })
-
-    
         //Enemy Animations
         this.anims.create({
             key: 'lancerDown',
@@ -215,23 +146,16 @@ class floor1 extends Phaser.Scene {
                 if(!this.cursors.left.isDown && !this.cursors.right.isDown && !this.cursors.up.isDown && !this.cursors.down.isDown){
                     this.player.anims.stop()
                 }
-                if(this.cursors.attack.isDown){
+                if(this.cursors.attack.isDown && !spaceIsPressed){
                     meleeAttack()
+                    spaceIsPressed = true
+                }
+                else if(!this.cursors.attack.isDown){
+                    spaceIsPressed = false
                 }
             }
             
             //player faces reticle
-            // this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
-            var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
-    
-            // Makes reticle move with player
-            reticle.body.velocity.x = this.player.body.velocity.x;
-            reticle.body.velocity.y = this.player.body.velocity.y;
-    
-            // Constrain position of reticle
-            constrainReticle(reticle);
-            constrainVelocity(reticle);
-    
             var playerCoordX = this.player.x;
             var playerCoordY = this.player.y
     

@@ -26,6 +26,6 @@ var wallLayer
 var objectLayer
 var playerEnemyOverlap
 var attackCollider
-var reticle
+var spaceIsPressed = false
 
 var _this //put the game reference in _this for ease of use
