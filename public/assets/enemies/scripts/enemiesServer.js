@@ -37,51 +37,85 @@ Tier1Melee = function(x,y,health,id){
     this.animation = 'lancerLeft'
     this.walkCounter = 30
     this.aggroTimer = 30
+    this.control = true
+    this.knockbacked = false
+    this.knocbackCounter = 5
+    this.knockback = function(dir){
+        this.control = false
+        this.xvel = 5
+        this.yvel = 0
+        this.knocbackCounter = 5
+        this.knockbacked = true
 
-
+        if(dir == 'left'){
+            this.xvel = -5
+            this.yvel = 0
+        }
+        else if (dir == 'right'){
+            this.xvel = 5
+            this.yvel = 0
+        }
+        else if (dir == 'down'){
+            this.xvel = 0
+            this.yvel = 5
+        }
+        else{
+            this.xvel = 0
+            this.yvel = -5
+        }
+    }
     this.update = function(players){
-        if(Object.keys(players).length!=0){
-            if(this.state == 'seeking'){
-                var data = findClosest(this.x,this.y,players)
-                var candidate = data[1]
-                var dist = data[0]
-                if(dist<100){
-                    this.target = candidate
-                    this.state = 'aggro'
-                }
-                else{
-                    randomWalk(this)
-                }
-            }
-            else if(this.state == 'aggro'){
-                if(this.target != null){
-                    reAggro(this,players)
-                    var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
-                    if(Math.abs(uvec[0]) > Math.abs(uvec[1])){
-                        if(uvec[0] > 0){
-                            this.animation = 'lancerRight'
-                        }
-                        else{
-                            this.animation = 'lancerLeft'
-                        }
+        if(this.control){
+            if(Object.keys(players).length!=0){
+                if(this.state == 'seeking'){
+                    var data = findClosest(this.x,this.y,players)
+                    var candidate = data[1]
+                    var dist = data[0]
+                    if(dist<100){
+                        this.target = candidate
+                        this.state = 'aggro'
                     }
                     else{
-                        if(uvec[1] > 0){
-                            this.animation = 'lancerDown'
+                        randomWalk(this)
+                    }
+                }
+                else if(this.state == 'aggro'){
+                    if(this.target != null){
+                        reAggro(this,players)
+                        var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                        if(Math.abs(uvec[0]) > Math.abs(uvec[1])){
+                            if(uvec[0] > 0){
+                                this.animation = 'lancerRight'
+                            }
+                            else{
+                                this.animation = 'lancerLeft'
+                            }
                         }
                         else{
-                            this.animation = 'lancerUp'
+                            if(uvec[1] > 0){
+                                this.animation = 'lancerDown'
+                            }
+                            else{
+                                this.animation = 'lancerUp'
+                            }
                         }
+                        this.xvel = uvec[0]*this.speed
+                        this.yvel = uvec[1]*this.speed
                     }
-                    this.xvel = uvec[0]*this.speed
-                    this.yvel = uvec[1]*this.speed
                 }
+    
             }
-
-            var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
-            this.x = finalPos[0]
-            this.y = finalPos[1]
         }
+        if(this.knockbacked){
+            this.knocbackCounter -= 1
+            if (this.knocbackCounter == 0){
+                this.control = true
+                this.knockbacked = false
+            }
+        }
+        var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
+        this.x = finalPos[0]
+        this.y = finalPos[1]
     }
 }
 

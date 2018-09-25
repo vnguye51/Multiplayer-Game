@@ -34,7 +34,7 @@ function meleeAttack(){
         attack.rotation = 3*Math.PI/2
     }
     var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
-        enemyHit(attack,enemy,attackCollider)
+        enemyHit(dir,attack,enemy,attackCollider)
     })
      //At some point this collider should be moved to the global scope and never destroyed
     setTimeout(function(){
@@ -58,11 +58,11 @@ function meleeAttack(){
     },200)
 }
 
-function enemyHit(attack,enemy,collider){
+function enemyHit(dir,attack,enemy,collider){
     if(collider.world){
         ///need to change this to only destroy the collision between the enemy 
         collider.destroy()
-        _this.socket.emit('enemyHit',enemy.id)
+        _this.socket.emit('enemyHit',enemy.id,dir)
         enemy.setTint(0x00ffff)
         setTimeout(function(){
             enemy.setTint(0xffffff)

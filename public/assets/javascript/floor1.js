@@ -12,7 +12,6 @@ class floor1 extends Phaser.Scene {
         //Load player assets
         this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
         this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
-        this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
         this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
         
         //Load enemy assets
@@ -75,7 +74,7 @@ class floor1 extends Phaser.Scene {
             _this.player.visible = false
             _this.socket.emit('floorChange','floor2',_this.socket.id)
         },this)
-        //Player Inputs go here
+
         // Locks pointer on mousedown
         game.canvas.addEventListener('mousedown', function () {
             game.input.mouse.requestPointerLock();

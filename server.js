@@ -67,8 +67,9 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('playerMoved', players[socket.id]);
       });
 
-    socket.on('enemyHit', function(enemyID){
+    socket.on('enemyHit', function(enemyID,dir){
         if(enemyList[enemyID]){
+            enemyList[enemyID].knockback(dir)
             enemyList[enemyID].health -= 1;
             if(enemyList[enemyID].health <= 0){
                 socket.emit('enemyDeath',enemyID)
