@@ -311,4 +311,13 @@ function sockets() {
             }
         });
     });
+
+    _this.socket.on('playerDeath', function(playerId){
+        _this.otherPlayers.getChildren().forEach(function(otherPlayer){
+            if(otherPlayer.playerId == playerId){
+            _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone')
+            _this.otherPlayer.visible = false
+            }
+        })
+    })
 }

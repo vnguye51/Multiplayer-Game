@@ -62,6 +62,7 @@ io.on('connection', function (socket) {
 
     socket.on('playerDeath', function(playerId){
         players[playerId].alive = false
+        socket.broadcast.emit('playerDeath',playerId)
     })
 
     socket.on('playerMovement', function (movementData) {
