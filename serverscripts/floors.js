@@ -13,6 +13,9 @@ for(var i=0; i<3; i++){
         enemyList[j+i*20+3] = new enemies.Bat(100+10*j,100+10*i,1,j+i*20+3)
     }
 }
+
+enemyList[enemyList.length] = new enemies.Whelp(200,200,5,enemyList.length)
+
 var floor1 = {
     enemyList: enemyList,
     playerSpawnX: 300,

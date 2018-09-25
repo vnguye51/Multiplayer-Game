@@ -8,9 +8,6 @@ function changeScene(scene) {
 
 
 function meleeAttack(){
-    // var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
-    // var attackX = _this.player.x + Math.cos(theta)*20
-    // var attackY = _this.player.y + Math.sin(theta)*20
     var dir = _this.player.direction
     _this.player.stats.control = false
     _this.player.setVelocityX(0)

@@ -18,11 +18,11 @@ class floor1 extends Phaser.Scene {
         //Load enemy assets
         this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
         this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
+        this.load.spritesheet('whelp','assets/enemies/sprites/whelp/Whelp.png',{frameWidth:64,frameHeight:64})
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
         this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')
-    
     }
     
     create () //Occurs when the scene is instantiated
@@ -116,6 +116,20 @@ class floor1 extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         })
+
+        this.anims.create({
+            key: 'whelpIdle',
+            frames: this.anims.generateFrameNumbers('whelp', {start:0,end: 4}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'whelpFire',
+            frames: this.anims.generateFrameNumbers('whelp', {start:5,end: 5}),
+            frameRate: 10,
+            repeat: -1
+        })
     }
     
     update() //Update is called every frame
@@ -164,10 +178,6 @@ class floor1 extends Phaser.Scene {
                     spaceIsPressed = false
                 }
             }
-            
-            //player faces reticle
-            var playerCoordX = this.player.x;
-            var playerCoordY = this.player.y
     
     
             ////Emit Socket Signals////
