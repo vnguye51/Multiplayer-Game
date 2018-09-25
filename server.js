@@ -41,6 +41,7 @@ io.on('connection', function (socket) {
         y: playerSpawnY,
         playerId: socket.id,
         nextFloor: false,
+        alive: true,
     };
     // send the players object to the new player
     socket.emit('currentPlayers', players);
@@ -58,6 +59,10 @@ io.on('connection', function (socket) {
         // emit a message to all players to remove this player
         io.emit('disconnect', socket.id);
     });
+
+    socket.on('playerDeath', function(playerId){
+        players[playerId].alive = false
+    })
 
     socket.on('playerMovement', function (movementData) {
         players[socket.id].x = movementData.x;

@@ -5,6 +5,8 @@ function changeScene(scene) {
     _this.scene.start(scene);
 }
 
+
+
 function meleeAttack(){
     // var theta = Phaser.Math.Angle.Between(_this.player.x,_this.player.y,reticle.x,reticle.y)
     // var attackX = _this.player.x + Math.cos(theta)*20
@@ -58,6 +60,25 @@ function meleeAttack(){
     },200)
 }
 
+function updateHealthBar(player){
+    if(player.health >= 0){
+        healthbar.clear()
+        var frameArray = []
+        for(var i = 0; i < player.health; i++){
+            frameArray.push(0)
+        }
+        for (var i = 0 ; i < 5-player.health; i++){
+            frameArray.push(1)
+        }
+        healthbar.createMultiple({key:'healthbar',frame: frameArray})
+        Phaser.Actions.SetXY(healthbar.getChildren(),12,12,20)
+        healthbar.getChildren().forEach(function(child){
+            child.scaleX = 0.5
+            child.scaleY = 0.5
+        })
+    }
+}
+
 function enemyHit(dir,attack,enemy,collider){
     if(collider.world){
         ///need to change this to only destroy the collision between the enemy 
@@ -71,40 +92,62 @@ function enemyHit(dir,attack,enemy,collider){
     
 }
 
+
 function hitByEnemy(player, enemy){
     //Check if the overlap still exists
     if(playerEnemyOverlap.world){
+        player.health -= 1
+        updateHealthBar(player)
+
         //Temporarily destroy the on overlap event(player is invulnerable)
         playerEnemyOverlap.destroy()
         //Remove player control
+    
         player.stats.control = false
+
+        
+        if(player.health > 0){
+            //Calculate angle between the the collision
+            var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
+            //Move the player away from the collision (theta+180degrees)
+            player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
+            player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
+        
+            //Color the player a little to show damage
+            player.setTint(0xff0000)
+            setTimeout(function(){
+                // After a small amount of time player regains control
+                player.stats.control = true
+            },100)
+        
     
-        //Calculate angle between the the collision
-        var theta = Phaser.Math.Angle.Between(player.x,player.y,enemy.x,enemy.y);
-        //Move the player away from the collision (theta+180degrees)
-        player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
-        player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
-    
-        //Color the player a little to show damage
-        player.setTint(0xff0000)
-        setTimeout(function(){
-            // After a small amount of time player regains control
-            player.stats.control = true
-        },100)
-        setTimeout(function(){
-            // After a little more time readd the overlap event 
-            //Return player to original color
-            player.setTint(0xffffff) 
-            // Readd the overlap event
-            playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
-        },300)
+            setTimeout(function(){
+                // After a little more time readd the overlap event 
+                //Return player to original color
+                player.setTint(0xffffff) 
+                // Readd the overlap event
+                playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
+            },300)
+        }
+        else{
+            playerDeath(player)
+        }
     }
    
+}
+
+function playerDeath(player){
+    player.setVelocityX(0)
+    player.setVelocityY(0)
+    _this.physics.add.sprite(player.x,player.y,'tombstone')
+    _this.player.visible = false
+    _this.socket.emit('playerDeath',_this.socket.id)
 }
 
 function addPlayer(_this, playerInfo){
     _this.player = _this.physics.add.sprite(playerInfo.x, playerInfo.y, 'player');
     _this.player.direction = 'left'
+    _this.player.health = 5
     _this.player.setSize(10,10)
     _this.cameras.main.startFollow(_this.player);
     _this.physics.add.collider(wallLayer,_this.player) //Create collision interaction

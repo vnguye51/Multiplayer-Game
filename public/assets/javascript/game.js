@@ -10,7 +10,7 @@ var config = {
             debug: false
         }
     },
-    scene: [floor1,floor2]
+    scene: [floor1,floor2,ui]
 };
 
 
@@ -27,5 +27,6 @@ var objectLayer
 var playerEnemyOverlap
 var attackCollider
 var spaceIsPressed = false
-
+var healthbar
+var uiScene
 var _this //put the game reference in _this for ease of use

@@ -11,6 +11,7 @@ class floor1 extends Phaser.Scene {
     {
         //Load player assets
         this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
+        this.load.image('tombstone','assets/items/tombstone.png')
         this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
         this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
         
@@ -25,6 +26,7 @@ class floor1 extends Phaser.Scene {
     
     create () //Occurs when the scene is instantiated
     {
+        this.scene.launch('UI')
         _this = this
         //Assigns the input keys. 
         enemies = this.physics.add.group()

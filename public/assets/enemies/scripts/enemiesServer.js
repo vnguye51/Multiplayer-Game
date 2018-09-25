@@ -80,7 +80,7 @@ Tier1Melee = function(x,y,health,id){
                     }
                 }
                 else if(this.state == 'aggro'){
-                    if(this.target != null){
+                    if(this.target != null && this.target.alive){
                         reAggro(this,players)
                         var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
                         if(Math.abs(uvec[0]) > Math.abs(uvec[1])){
@@ -125,12 +125,14 @@ function findClosest(x,y,players){
     var minDist = 9999
     var target = null
     for(id in players){
-        //Pythag theorem to find distance
-        var dist = Math.hypot((x-players[id].x),(y-players[id].y))
-        if(dist < minDist){
-            minDist = dist
-            target=players[id]
+        if(players[id].alive){
+            var dist = Math.hypot((x-players[id].x),(y-players[id].y))
+            if(dist < minDist){
+                minDist = dist
+                target=players[id]
+            }
         }
+        //Pythag theorem to find distance
     }
     return [minDist,target]
 
