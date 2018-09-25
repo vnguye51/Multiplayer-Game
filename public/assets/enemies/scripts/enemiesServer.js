@@ -178,12 +178,18 @@ Bat = function (x,y,health,id){
                 }
                 else if(this.state == 'cooldown'){
                     this.cooldownTimer -= 1
-                    if(this.cooldownTimer == 0 && this.target != null && this.target.alive){
+                    if(this.cooldownTimer == 0){
+                        var data = findClosest(this.x,this.y,players)
+                        var candidate = data[1]
+                        console.log(candidate)
+                        this.target = candidate
                         this.state = 'aggro'
                         this.cooldownTimer = 90
-                        var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
-                        this.xvel = uvec[0]*this.speed
-                        this.yvel = uvec[1]*this.speed
+                        if(this.target != null){
+                            var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                            this.xvel = uvec[0]*this.speed
+                            this.yvel = uvec[1]*this.speed
+                        }
                     } 
                 }
                 else if(this.state == 'aggro'){                        

@@ -35,7 +35,7 @@ function meleeAttack(){
         var attack = _this.physics.add.sprite(_this.player.x,_this.player.y-16,'playerMeleeAttack')
         attack.rotation = 3*Math.PI/2
     }
-    var attackCollider = _this.physics.add.overlap(attack,enemies,function(attack,enemy){
+    var attackCollider = _this.physics.add.overlap(attack,enemyAttackGroup,function(attack,enemy){
         enemyHit(dir,attack,enemy,attackCollider)
     })
      //At some point this collider should be moved to the global scope and never destroyed
@@ -82,11 +82,12 @@ function updateHealthBar(player){
 function enemyHit(dir,attack,enemy,collider){
     if(collider.world){
         ///need to change this to only destroy the collision between the enemy 
-        collider.destroy()
+        enemyAttackGroup.remove(enemy)
         _this.socket.emit('enemyHit',enemy.id,dir)
         enemy.setTint(0x00ffff)
         setTimeout(function(){
             enemy.setTint(0xffffff)
+            enemyAttackGroup.add(enemy)
         },500)
     }
     
@@ -173,6 +174,7 @@ function addOtherPlayer(_this, playerInfo){
 function addEnemy(_this, enemyInfo){
     enemy = new Tier1Melee(_this,enemyInfo.x,enemyInfo.y,enemyInfo.health,enemyInfo.id)
     enemies.add(enemy,true)
+    enemyAttackGroup.add(enemy)
     enemy.create()
 }
 
