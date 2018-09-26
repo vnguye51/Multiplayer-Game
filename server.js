@@ -24,7 +24,6 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('*', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
-    
   });
 
 
@@ -35,6 +34,7 @@ io.on('connection', function (socket) {
         rotation: 0,
         x: playerSpawnX,
         y: playerSpawnY,
+        currentAnim: null,
         playerId: socket.id,
         nextFloor: false,
         alive: true,
@@ -56,6 +56,10 @@ io.on('connection', function (socket) {
         io.emit('disconnect', socket.id);
     });
 
+    socket.on('firstConnect',function(){
+        socket.emit('changeScene',scene)
+    })
+
     socket.on('playerDeath', function(playerId){
         players[playerId].alive = false
         socket.broadcast.emit('playerDeath',playerId)
@@ -65,6 +69,7 @@ io.on('connection', function (socket) {
         players[socket.id].x = movementData.x;
         players[socket.id].y = movementData.y;
         players[socket.id].rotation = movementData.rotation;
+        players[socket.id].currentAnim = movementData.currentAnim
         // emit a message to all players about the player that moved
         socket.broadcast.emit('playerMoved', players[socket.id]);
       });
@@ -72,18 +77,13 @@ io.on('connection', function (socket) {
     socket.on('enemyHit', function(enemyID,dir){
         if(enemyList[enemyID]){
             enemyList[enemyID].knockback(dir)
-            enemyList[enemyID].health -= 1;
-            if(enemyList[enemyID].health <= 0){
-                delete enemyList[enemyID]
-                socket.emit('enemyDeath',enemyID)
-                socket.broadcast.emit('enemyDeath',enemyID)
-            }
         }
     })
 
 
-    socket.on('floorChange', function(scene,id){
+    socket.on('floorChange', function(newScene,id){
         //Check if all players are attempting to change floors
+        scene=newScene
         var change = true
         players[id].floorChange = true
         for(id in players){
@@ -96,7 +96,7 @@ io.on('connection', function (socket) {
             enemyList = floors[scene].enemyList
             playerSpawnX = floors[scene].playerSpawnX
             playerSpawnY = floors[scene].playerSpawnY
-            io.emit('currentScene', scene)
+            io.emit('changeScene', scene)
             console.log(scene)
         }
     })
@@ -110,6 +110,21 @@ function update(){
             enemyList[key].update(players,enemyList,projectileList)
             if(enemyList[key].boss){
                 io.emit('updateBossHealth',enemyList[key].health)
+                if(enemyList[key].health == 0){
+                    console.log('Victory!')
+                    setTimeout(function(){
+                        scene = 'floor1'
+                        enemyList = floors[scene].enemyList
+                        playerSpawnX = floors[scene].playerSpawnX
+                        playerSpawnY = floors[scene].playerSpawnY
+                        io.emit('changeScene',scene)
+                    },5000)
+                   
+                }
+            }
+            if(enemyList[key].health <= 0){
+                delete enemyList[key]
+                io.emit('enemyDeath',key)
             }
         }
         for(key in projectileList){
@@ -123,10 +138,10 @@ function update(){
         }
         io.emit('updateEnemies',enemyList)
         io.emit('updateProjectiles', projectileList)
+
         update()
     }, 33)
 }
-
 
 update()
 

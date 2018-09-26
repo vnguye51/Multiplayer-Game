@@ -145,12 +145,14 @@ class floor4 extends Phaser.Scene {
     update() //Update is called every frame
     {   // Only run update code once the player is connected
         if(this.player){
+            socket.emit('playerMovement', { x: _this.player.x, y: _this.player.y, rotation: _this.player.rotation, currentAnim: _this.player.currentAnim});
 
             if(this.player.stats.control == true){
 
                 if (this.cursors.left.isDown){
                     this.player.setVelocityX(-120);
                     this.player.anims.play('left',true)
+                    this.player.currentAnim = 'left'
                     this.player.flipX = true
                     this.player.direction = 'left'
                 }
@@ -159,6 +161,7 @@ class floor4 extends Phaser.Scene {
                     this.player.anims.play('right',true)
                     this.player.flipX = false
                     this.player.direction = 'right'
+                    this.player.currentAnim = 'right'
 
                 }
                 else{
@@ -166,12 +169,15 @@ class floor4 extends Phaser.Scene {
                 }
                 if (this.cursors.up.isDown){
                     this.player.setVelocityY(-120);
-                    this.player.anims.play('up',true)      
+                    this.player.anims.play('up',true) 
+                    this.player.currentAnim = 'up'
+     
                     this.player.direction = 'up'      
                 }
                 else if (this.cursors.down.isDown){
                     this.player.setVelocityY(120);
                     this.player.anims.play('down',true)
+                    this.player.currentAnim = 'down'
                     this.player.direction = 'down'      
 
                 }
@@ -180,6 +186,7 @@ class floor4 extends Phaser.Scene {
                 }
                 if(!this.cursors.left.isDown && !this.cursors.right.isDown && !this.cursors.up.isDown && !this.cursors.down.isDown){
                     this.player.anims.stop()
+                    this.player.currentAnim = null
                 }
                 if(this.cursors.attack.isDown && !spaceIsPressed){
                     meleeAttack()
@@ -189,25 +196,6 @@ class floor4 extends Phaser.Scene {
                     spaceIsPressed = false
                 }
             }
-    
-    
-            ////Emit Socket Signals////
-            // emit player movement
-            var x = this.player.x;
-            var y = this.player.y;
-            var rotation = this.player.rotation;
-    
-            //If player position changed
-            if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y || rotation !== this.player.oldPosition.rotation)) {
-                socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
-            }
-            
-            // save old position data
-            this.player.oldPosition = {
-            x: this.player.x,
-            y: this.player.y,
-            rotation: this.player.rotation,
-            };
         }
     }
 }

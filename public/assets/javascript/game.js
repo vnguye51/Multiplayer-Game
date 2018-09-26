@@ -3,19 +3,18 @@ var config = {
     width: 320,
     height: 240,
     pixelArt: true,
-    zoom: 1,
+    zoom: 2,
     physics: {
         default: 'arcade',
         arcade: {
             debug: false
         }
     },
-    scene: [floor1,floor2,floor3,floor4,ui,BossUI]
+    scene: [lobby,floor1,floor2,floor3,floor4,ui,BossUI]
 };
 
 
 
-// var socket = io()
 var game = new Phaser.Game(config);
 //Define global variables(might want to move them into the classes later)
 
@@ -28,6 +27,7 @@ var groundLayer
 var wallLayer
 var objectLayer
 var playerEnemyOverlap
+var playerProjectileOverlap
 var attackCollider
 var spaceIsPressed = false
 var healthbar

@@ -6,7 +6,6 @@ function changeScene(scene) {
 }
 
 
-
 function meleeAttack(){
     var dir = _this.player.direction
     _this.player.stats.control = false
@@ -14,28 +13,31 @@ function meleeAttack(){
     _this.player.setVelocityY(0)
     if(dir == 'left'){
         _this.player.anims.play('attackLeft',true)
-        var attack = _this.physics.add.sprite(_this.player.x-16,_this.player.y,'playerMeleeAttack')
+        _this.player.currentAnim = 'attackLeft'
+        var attack = _this.physics.add.sprite(_this.player.x-20,_this.player.y,'playerMeleeAttack')
         attack.rotation = Math.PI
     }
     else if(dir == 'right'){
         _this.player.anims.play('attackRight',true)
-        var attack = _this.physics.add.sprite(_this.player.x+16,_this.player.y,'playerMeleeAttack')
+        _this.player.currentAnim = 'attackRight'
+        var attack = _this.physics.add.sprite(_this.player.x+20,_this.player.y,'playerMeleeAttack')
         attack.rotation = 0
     }
     else if(dir == 'down'){
         _this.player.anims.play('attackDown',true)
-        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y+16,'playerMeleeAttack')
+        _this.player.currentAnim = 'attackDown'
+        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y+20,'playerMeleeAttack')
         attack.rotation = Math.PI/2
     }
     else{
         _this.player.anims.play('attackUp',true)
-        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y-16,'playerMeleeAttack')
+        _this.player.currentAnim = 'attackUp'
+        var attack = _this.physics.add.sprite(_this.player.x,_this.player.y-20,'playerMeleeAttack')
         attack.rotation = 3*Math.PI/2
     }
     var attackCollider = _this.physics.add.overlap(attack,enemyAttackGroup,function(attack,enemy){
         enemyHit(dir,attack,enemy,attackCollider)
     })
-     //At some point this collider should be moved to the global scope and never destroyed
     setTimeout(function(){
         if(attackCollider.world){
             attackCollider.destroy()
@@ -44,35 +46,44 @@ function meleeAttack(){
         attack.destroy()
         if(dir == 'left'){
             _this.player.anims.play('left',true)
+            _this.player.currentAnim = 'left'
         }
         else if(dir == 'right'){
             _this.player.anims.play('right',true)
+            _this.player.currentAnim = 'right'
+
         }
         else if(dir == 'down'){
             _this.player.anims.play('down',true)
+            _this.player.currentAnim = 'down'
+
         }
         else{
             _this.player.anims.play('up')
+            _this.player.currentAnim = 'up'
         }
     },200)
 }
 
 function updateHealthBar(player){
-    if(player.health >= 0){
-        healthbar.clear()
-        var frameArray = []
-        for(var i = 0; i < player.health; i++){
-            frameArray.push(0)
+    if(healthbar){
+        if(player.health >= 0){
+            
+            healthbar.clear()
+            var frameArray = []
+            for(var i = 0; i < player.health; i++){
+                frameArray.push(0)
+            }
+            for (var i = 0 ; i < 5-player.health; i++){
+                frameArray.push(1)
+            }
+            healthbar.createMultiple({key:'healthbar',frame: frameArray})
+            Phaser.Actions.SetXY(healthbar.getChildren(),12,12,20)
+            healthbar.getChildren().forEach(function(child){
+                child.scaleX = 0.5
+                child.scaleY = 0.5
+            })
         }
-        for (var i = 0 ; i < 5-player.health; i++){
-            frameArray.push(1)
-        }
-        healthbar.createMultiple({key:'healthbar',frame: frameArray})
-        Phaser.Actions.SetXY(healthbar.getChildren(),12,12,20)
-        healthbar.getChildren().forEach(function(child){
-            child.scaleX = 0.5
-            child.scaleY = 0.5
-        })
     }
 }
 
@@ -81,13 +92,14 @@ function enemyHit(dir,attack,enemy,collider){
         ///need to change this to only destroy the collision between the enemy 
         enemyAttackGroup.remove(enemy)
         socket.emit('enemyHit',enemy.id,dir)
-        enemy.setTint(0x00ffff)
+        enemy.setTintFill(0xffffff)
         setTimeout(function(){
-            enemy.setTint(0xffffff)
+            enemy.clearTint()
+        },100)
+        setTimeout(function(){
             enemyAttackGroup.add(enemy)
-        },500)
+        },300)
     }
-    
 }
 
 
@@ -112,6 +124,49 @@ function hitByEnemy(player, enemy){
             player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
         
             //Color the player a little to show damage
+            player.setTintFill(0xffffff)
+            setTimeout(function(){
+                // After a small amount of time player regains control
+                player.stats.control = true
+            },100)
+        
+    
+            setTimeout(function(){
+                // After a little more time readd the overlap event 
+                //Return player to original color
+                player.clearTint()
+                // Readd the overlap event
+                playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
+            },300)
+        }
+        else{
+            playerDeath(player)
+        }
+    }
+   
+}
+
+function hitByProjectile(player, projectile){
+    //Check if the overlap still exists
+    if(playerProjectileOverlap.world){
+        player.health -= 1
+        updateHealthBar(player)
+
+        //Temporarily destroy the on overlap event(player is invulnerable)
+        playerProjectileOverlap.destroy()
+        //Remove player control
+    
+        player.stats.control = false
+
+        
+        if(player.health > 0){
+            //Calculate angle between the the collision
+            var theta = Phaser.Math.Angle.Between(player.x,player.y,projectile.x,projectile.y);
+            //Move the player away from the collision (theta+180degrees)
+            player.body.velocity.x = (Math.cos(theta+Math.PI)*360)
+            player.body.velocity.y = (Math.sin(theta+Math.PI)*360)
+        
+            //Color the player a little to show damage
             player.setTint(0xff0000)
             setTimeout(function(){
                 // After a small amount of time player regains control
@@ -124,7 +179,7 @@ function hitByEnemy(player, enemy){
                 //Return player to original color
                 player.setTint(0xffffff) 
                 // Readd the overlap event
-                playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
+                playerProjectileOverlap = _this.physics.add.overlap(enemyProjectiles,player,hitByProjectile)
             },300)
         }
         else{
@@ -157,7 +212,7 @@ function addPlayer(_this, playerInfo){
     //Attach a collision callback between the group enemies and the player
 
     playerEnemyOverlap = _this.physics.add.overlap(enemies,_this.player,hitByEnemy)
-    
+    playerProjectileOverlap = _this.physics.add.overlap(enemyProjectiles,_this.player,hitByProjectile)
 }
 
 function addOtherPlayer(_this, playerInfo){
@@ -199,9 +254,11 @@ function removeEnemy(_this,enemyID){
 }
 
 function addProjectile(_this,projectileInfo){
-    projectile = new Fireball(_this,projectileInfo.x,projectileInfo.y,projectileInfo.id)
-    enemyProjectiles.add(projectile,true)
-    // enemyProjectiles.create()
+    if(projectileInfo){
+        projectile = new Fireball(_this,projectileInfo.x,projectileInfo.y,projectileInfo.id)
+        enemyProjectiles.add(projectile,true)
+    }
+
 }
 
 function updateProjectile(_this,projectileInfo){
@@ -278,7 +335,8 @@ function sockets() {
         }
     });
 
-    socket.on('currentScene',function(scene){
+
+    socket.on('changeScene',function(scene){
         changeScene(scene)
     })
 
@@ -299,6 +357,7 @@ function sockets() {
             }
         }
     });
+
 
     //updateEnemies is sent every frame(30fps)
     //Updates the position and logic of every enemy in the game
@@ -351,7 +410,57 @@ function sockets() {
             //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
             if (playerInfo.playerId === otherPlayer.playerId) {
                 otherPlayer.setRotation(playerInfo.rotation);
-                otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+                otherPlayer.setPosition(playerInfo.x, playerInfo.y)
+                if(playerInfo.currentAnim){
+                    otherPlayer.anims.play(playerInfo.currentAnim,true)
+                    if(playerInfo.currentAnim == 'left'){
+                        otherPlayer.flipX = true
+                    }
+                    else if(playerInfo.currentAnim == 'right'){
+                        otherPlayer.flipX = false
+                    }
+                    
+                    if(playerInfo.currentAnim == 'attackLeft'){
+                        otherPlayer.anims.play('attackLeft',true)
+                        otherPlayer.currentAnim = 'attackLeft'
+                        var attack = _this.physics.add.sprite(otherPlayer.x-20,otherPlayer.y,'playerMeleeAttack')
+                        attack.rotation = Math.PI
+                        setTimeout(function(){
+                            attack.destroy()
+                        },100)
+                    }
+                    else if(playerInfo.currentAnim == 'attackRight'){
+                        otherPlayer.anims.play('attackRight',true)
+                        otherPlayer.AnimAnim = 'attackRight'
+                        var attack = _this.physics.add.sprite(otherPlayer.x+20,otherPlayer.y,'playerMeleeAttack')
+                        attack.rotation = 0
+                        setTimeout(function(){
+                            attack.destroy()
+                        },100)
+                    }
+                    else if(playerInfo.currentAnim == 'attackDown'){
+                        otherPlayer.anims.play('attackDown',true)
+                        otherPlayer.currentAnim = 'attackDown'
+                        var attack = _this.physics.add.sprite(otherPlayer.x,otherPlayer.y+20,'playerMeleeAttack')
+                        attack.rotation = Math.PI/2
+                        setTimeout(function(){
+                            attack.destroy()
+                        },100)
+                    }
+                    else if (playerInfo.currentAnim == 'attackUp'){
+                        otherPlayer.anims.play('attackUp',true)
+                        otherPlayer.currentAnim = 'attackUp'
+                        var attack = _this.physics.add.sprite(otherPlayer.x,otherPlayer.y-20,'playerMeleeAttack')
+                        attack.rotation = 3*Math.PI/2
+                        setTimeout(function(){
+                            attack.destroy()
+                        },100)
+                    }
+                }
+                else{
+                    otherPlayer.anims.stop()
+                }
+                
             }
         });
     });

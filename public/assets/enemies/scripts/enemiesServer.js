@@ -112,6 +112,8 @@ Tier1Melee = function(x,y,health,id){
             if (this.knocbackCounter == 0){
                 this.control = true
                 this.knockbacked = false
+                this.health -= 1
+
             }
         }
         var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
@@ -208,6 +210,7 @@ Bat = function (x,y,health,id){
             if (this.knocbackCounter == 0){
                 this.control = true
                 this.knockbacked = false
+                this.health -= 1
             }
         }
         var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
@@ -236,7 +239,9 @@ Whelp = function (x,y,health,id){
     this.fireTimer = 120
     this.pattern = 0
     this.attackRot = 0
-    this.knockback = function(dir){}
+    this.knockback = function(dir){
+        this.health -= 1
+    }
 
     this.update = function(players,enemyList,projectileList){
         if(this.control){
