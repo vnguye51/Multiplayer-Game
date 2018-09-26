@@ -2,6 +2,7 @@
 //Constructor for basic enemy
 //Wanders around until a player enters its radius
 //Then chases that player
+var projectiles = require('../../../../serverscripts/projectiles.js').projectiles
 
 function joinCollisionLayers(layers){
     var collisionArray = []
@@ -181,7 +182,6 @@ Bat = function (x,y,health,id){
                     if(this.cooldownTimer == 0){
                         var data = findClosest(this.x,this.y,players)
                         var candidate = data[1]
-                        console.log(candidate)
                         this.target = candidate
                         this.state = 'aggro'
                         this.cooldownTimer = 90
@@ -217,6 +217,7 @@ Bat = function (x,y,health,id){
 }
 
 Whelp = function (x,y,health,id){
+    this.boss = true
     this.x = x
     this.y = y
     this.xvel = 0
@@ -233,8 +234,11 @@ Whelp = function (x,y,health,id){
     this.knocbackCounter = 5
     this.cooldownTimer = 90
     this.fireTimer = 120
+    this.pattern = 0
+    this.attackRot = 0
+    this.knockback = function(dir){}
 
-    this.update = function(players){
+    this.update = function(players,enemyList,projectileList){
         if(this.control){
             if(Object.keys(players).length!=0){
                 if(this.state == 'seeking'){
@@ -256,7 +260,6 @@ Whelp = function (x,y,health,id){
                     if(this.cooldownTimer == 0){
                         var data = findClosest(this.x,this.y,players)
                         var candidate = data[1]
-                        console.log(candidate)
                         this.target = candidate
                         this.state = 'aggro'
                         this.cooldownTimer = 90
@@ -278,9 +281,40 @@ Whelp = function (x,y,health,id){
                 }
                 else if(this.state == 'fire'){
                     this.fireTimer -= 1
+                    if(this.pattern == 0){
+                        if(this.fireTimer % 20 == 0){
+                            if(this.target != null){
+                                this.attackRot = angleBetween(this.x,this.y,this.target.x,this.target.y)
+                            }
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,4,projectileList.length))
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot+Math.PI/3,4,projectileList.length))
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot-Math.PI/3,4,projectileList.length))
+                        }
+                    }
+                    else if(this.pattern == 1){
+                        if(this.fireTimer % 5 == 0){
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,4,projectileList.length))
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot + Math.PI,4,projectileList.length))
+                            this.attackRot += 2*Math.PI/24
+                        }
+                    }
+
+                    else if(this.pattern == 2){
+                        if(this.fireTimer % 3 ==0){
+                            if(this.target != null){
+                                this.attackRot = angleBetween(this.x,this.y,this.target.x,this.target.y)
+                            }
+                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,6,projectileList.length))
+                        }
+                    }
+
                     if(this.fireTimer == 0){
                         this.fireTimer = 120
                         this.state = 'cooldown'
+                        this.pattern += 1
+                        if(this.pattern == 3){
+                            this.pattern = 0
+                        }
                     }
                 }
             }

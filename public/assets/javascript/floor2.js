@@ -53,6 +53,7 @@ class floor2 extends Phaser.Scene {
 
         //camera
         this.cameras.main.setSize(320, 240);
+        this.cameras.main.setBounds(0,0,640,480)
 
         
 
@@ -78,7 +79,7 @@ class floor2 extends Phaser.Scene {
             _this.player.body.velocity.x = 0
             _this.player.body.velocity.y = 0
             _this.player.visible = false
-            _this.socket.emit('floorChange','floor1',_this.socket.id)
+            socket.emit('floorChange','floor4',socket.id)
         },this)
 
         objectLayer.setDepth(-1)
@@ -180,7 +181,7 @@ class floor2 extends Phaser.Scene {
     
             //If player position changed
             if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y || rotation !== this.player.oldPosition.rotation)) {
-                _this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
+                socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
             }
             
             // save old position data

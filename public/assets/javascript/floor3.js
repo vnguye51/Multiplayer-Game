@@ -1,10 +1,10 @@
 
 
-class floor1 extends Phaser.Scene {
+class floor3 extends Phaser.Scene {
 
     constructor ()
     {
-        super({ key: 'floor1' });
+        super({ key: 'floor3' });
     }
 
     preload () //preload occurs prior to the scene(game) being instantiated
@@ -22,11 +22,12 @@ class floor1 extends Phaser.Scene {
         this.load.image('fireball', 'assets/projectiles/fireball.png')
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
-        this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')
+        this.load.tilemapTiledJSON('floor3','assets/tilemap/Floor3.json')
     }
     
     create () //Occurs when the scene is instantiated
     {
+
         this.scene.launch('UI')
         _this = this
         //Assigns the input keys. 
@@ -51,12 +52,11 @@ class floor1 extends Phaser.Scene {
 
         //camera
         this.cameras.main.setSize(320, 240);
-        this.cameras.main.setBounds(0,0,640,480)
-
+        this.cameras.main.setBounds(0,0,1920,1280)
         
 
         ////TILEMAP DATA
-        map = this.make.tilemap({key: 'map'}) //Create tilemap
+        map = this.make.tilemap({key: 'floor3'}) //Create tilemap
         var tileset = map.addTilesetImage('cave') //Use the tileset(must be the same name as the one in the Tiled editor)
 
         //Create the layers
@@ -78,7 +78,7 @@ class floor1 extends Phaser.Scene {
             _this.player.body.velocity.x = 0
             _this.player.body.velocity.y = 0
             _this.player.visible = false
-            socket.emit('floorChange','floor2',socket.id)
+            socket.emit('floorChange','floor4',socket.id)
         },this)
 
         // Locks pointer on mousedown
@@ -122,7 +122,7 @@ class floor1 extends Phaser.Scene {
         this.anims.create({
             key: 'whelpIdle',
             frames: this.anims.generateFrameNumbers('whelp', {start:0,end: 4}),
-            frameRate: 4,
+            frameRate: 10,
             repeat: -1
         })
 

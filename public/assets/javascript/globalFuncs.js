@@ -1,6 +1,6 @@
 
 function changeScene(scene) {
-    _this.socket.disconnect();
+    socket.disconnect();
     _this.player = null;
     _this.scene.start(scene);
 }
@@ -80,7 +80,7 @@ function enemyHit(dir,attack,enemy,collider){
     if(collider.world){
         ///need to change this to only destroy the collision between the enemy 
         enemyAttackGroup.remove(enemy)
-        _this.socket.emit('enemyHit',enemy.id,dir)
+        socket.emit('enemyHit',enemy.id,dir)
         enemy.setTint(0x00ffff)
         setTimeout(function(){
             enemy.setTint(0xffffff)
@@ -139,7 +139,7 @@ function playerDeath(player){
     player.setVelocityY(0)
     _this.physics.add.sprite(player.x,player.y,'tombstone')
     _this.player.visible = false
-    _this.socket.emit('playerDeath',_this.socket.id)
+    socket.emit('playerDeath',socket.id)
 }
 
 function addPlayer(_this, playerInfo){
@@ -172,7 +172,6 @@ function addEnemy(_this, enemyInfo){
     enemy = new Tier1Melee(_this,enemyInfo.x,enemyInfo.y,enemyInfo.health,enemyInfo.id)
     enemies.add(enemy,true)
     enemyAttackGroup.add(enemy)
-    enemy.create()
 }
 
 function updateEnemy(_this,enemyInfo){
@@ -195,6 +194,30 @@ function removeEnemy(_this,enemyID){
     enemies.getChildren().forEach(function(enemy){
         if(enemy.id == enemyID){
             enemies.remove(enemy,true)
+        }
+    })
+}
+
+function addProjectile(_this,projectileInfo){
+    projectile = new Fireball(_this,projectileInfo.x,projectileInfo.y,projectileInfo.id)
+    enemyProjectiles.add(projectile,true)
+    // enemyProjectiles.create()
+}
+
+function updateProjectile(_this,projectileInfo){
+    enemyProjectiles.getChildren().forEach(function(projectile){
+        if(projectileInfo && projectileInfo.id == projectile.id){
+            projectile.x = projectileInfo.x
+            projectile.y = projectileInfo.y
+            // projectile.anims.play('fireball',true)
+        }
+    })
+}
+
+function removeProjectile(_this,projectileID){
+    enemyProjectiles.getChildren().forEach(function(projectile){
+        if(projectile.id == projectileID){
+            enemyProjectiles.remove(enemy,true)
         }
     })
 }
@@ -240,13 +263,13 @@ function constrainReticle(reticle)
 
 function sockets() {
     //Attach socket to the game for ease of access
-    _this.socket = io()
+    socket = io()
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client
-    _this.socket.on('currentPlayers', function (players) {
+    socket.on('currentPlayers', function (players) {
         var ids = Object.keys(players)
         for(var i = 0; i< ids.length; i++){
-            if (players[ids[i]].playerId === _this.socket.id) {
+            if (players[ids[i]].playerId === socket.id) {
                 addPlayer(_this, players[ids[i]]); //creates _this.player
               }
             else{
@@ -255,44 +278,66 @@ function sockets() {
         }
     });
 
-    _this.socket.on('currentScene',function(scene){
+    socket.on('currentScene',function(scene){
         changeScene(scene)
     })
 
     //newPlayer is sent when a new player connects to the server
     //Adds that player to the game
-    _this.socket.on('newPlayer', function (playerInfo) {
+    socket.on('newPlayer', function (playerInfo) {
         addOtherPlayer(_this, playerInfo);
     });
 
     //currentEnemies is sent when you connect to the server
     //Grabs the list of current enemies and adds them to the client
-    _this.socket.on('currentEnemies', function (enemies) {
+    socket.on('currentEnemies', function (enemies) {
         var ids = Object.keys(enemies)
 
         for (var i = 0; i<ids.length; i++) {
-            addEnemy(_this, enemies[ids[i]]);
+            if(enemies[ids[i]]){
+                addEnemy(_this, enemies[ids[i]]);
+            }
         }
     });
 
     //updateEnemies is sent every frame(30fps)
     //Updates the position and logic of every enemy in the game
-    _this.socket.on('updateEnemies', function (enemies) {
+    socket.on('updateEnemies', function (enemies) {
         for (id in enemies) {
-            
             updateEnemy(_this, enemies[id]);
         }
     });
 
     //enemyDeath is sent whenever an enemy dies
     //Removes the enemy from your game
-    _this.socket.on('enemyDeath', function (enemyID) {
+    socket.on('enemyDeath', function (enemyID) {
         removeEnemy(_this, enemyID);
     });
 
+    socket.on('currentProjectiles', function (projectiles){
+        var ids = Object.keys(projectiles)
+        for (var i = 0; i<ids.length; i++) {
+            if(projectiles[ids[i]]){
+                addProjectile(_this, projectiles[ids[i]]);
+            }
+        }
+    })
+
+    socket.on('updateProjectiles', function (projectiles) {
+        for (id in projectiles) {
+            if(!enemyProjectiles.getChildren()[id]){
+                addProjectile(_this,projectiles[id])
+            }
+            updateProjectile(_this, projectiles[id]);
+        }
+    });
+
+    socket.on('projectileDeath', function(projectileID){
+        removeProjectile(_this,projectileID)
+    })
     //disconnect is sent whenever another player's connection is lost
     //Removes that player from the game
-    _this.socket.on('disconnect', function (playerId) {
+    socket.on('disconnect', function (playerId) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             if (playerId === otherPlayer.playerId) {
                 otherPlayer.destroy();
@@ -301,7 +346,7 @@ function sockets() {
     });
 
     //Whenever a player moves or changes rotation on the server update it in the client
-    _this.socket.on('playerMoved', function (playerInfo) {
+    socket.on('playerMoved', function (playerInfo) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
             if (playerInfo.playerId === otherPlayer.playerId) {
@@ -311,7 +356,7 @@ function sockets() {
         });
     });
 
-    _this.socket.on('playerDeath', function(playerId){
+    socket.on('playerDeath', function(playerId){
         _this.otherPlayers.getChildren().forEach(function(otherPlayer){
             if(otherPlayer.playerId == playerId){
             _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone')
@@ -319,4 +364,6 @@ function sockets() {
             }
         })
     })
+
 }
+

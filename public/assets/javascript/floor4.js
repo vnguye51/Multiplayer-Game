@@ -1,10 +1,10 @@
 
 
-class floor1 extends Phaser.Scene {
+class floor4 extends Phaser.Scene {
 
     constructor ()
     {
-        super({ key: 'floor1' });
+        super({ key: 'floor4' });
     }
 
     preload () //preload occurs prior to the scene(game) being instantiated
@@ -22,12 +22,13 @@ class floor1 extends Phaser.Scene {
         this.load.image('fireball', 'assets/projectiles/fireball.png')
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
-        this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')
+        this.load.tilemapTiledJSON('Floor4','assets/tilemap/Floor4.json')
     }
     
     create () //Occurs when the scene is instantiated
     {
         this.scene.launch('UI')
+        this.scene.launch('bossUI')
         _this = this
         //Assigns the input keys. 
         enemies = this.physics.add.group()
@@ -51,12 +52,12 @@ class floor1 extends Phaser.Scene {
 
         //camera
         this.cameras.main.setSize(320, 240);
-        this.cameras.main.setBounds(0,0,640,480)
+        this.cameras.main.setBounds(0,0,640,640)
 
         
 
         ////TILEMAP DATA
-        map = this.make.tilemap({key: 'map'}) //Create tilemap
+        map = this.make.tilemap({key: 'Floor4'}) //Create tilemap
         var tileset = map.addTilesetImage('cave') //Use the tileset(must be the same name as the one in the Tiled editor)
 
         //Create the layers
@@ -71,7 +72,7 @@ class floor1 extends Phaser.Scene {
 
 
         objectLayer = map.createStaticLayer('Objects',tileset,0,0)
-        objectLayer.setCollisionByExclusion([-1,53,69,85,100,101,102])
+        objectLayer.setCollisionByExclusion([-1,53,69,85,100,101,102,117,118,133,134])
         objectLayer.setDepth(-1)
         objectLayer.setTileIndexCallback([53],function(){
             _this.player.stats.control = false
