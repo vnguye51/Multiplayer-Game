@@ -484,10 +484,10 @@ function sockets() {
     })
 
     socket.on('Victory', function(){
+        uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
+        uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
         setTimeout(function(){
             location.assign('/')
-            uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
-            uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
         },5000)
     })
 }

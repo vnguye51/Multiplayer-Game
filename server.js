@@ -103,7 +103,9 @@ io.on('connection', function (socket) {
         //Check if all players are attempting to change floors
         scene=newScene
         var change = true
-        players[id].floorChange = true
+        if(players[id]){
+            players[id].floorChange = true
+        }
 
         //Check if all living players have made it to the door
         for(id in players){
