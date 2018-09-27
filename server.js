@@ -1,35 +1,47 @@
 // Dependencies
 var express = require("express");
+var enemies = require('./public/assets/enemies/scripts/enemiesServer').enemies
+
 // Create an instance of the express app.
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
-var Floors = require('./serverscripts/floors').Floors
-var originalFloors = new Floors()
-var floors = Object.assign({},originalFloors)
-console.log(originalFloors)
-console.log(floors)
+var originalFloorData = require('./serverscripts/floorData').floors
+function populateFloor(floor){
+    var enemyList = []
+    var enemyData = originalFloorData[floor].enemyList
+    for(var i=0;i<enemyData.length;i++){
+        var enemyConstructor = enemies[enemyData[i].name]
+        enemyList.push(new enemyConstructor(enemyData[i].x,enemyData[i].y,enemyData[i].health,enemyData[i].id))
+    }
+    return enemyList
+}
+
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
+var tombstones = []
 var scene = 'floor1'
-var enemyList = floors[scene].enemyList;
+var enemyList = populateFloor(scene);
 var projectileList = []
-var playerSpawnX = floors[scene].playerSpawnX
-var playerSpawnY = floors[scene].playerSpawnY
+var playerSpawnX = originalFloorData[scene].playerSpawnX
+var playerSpawnY = originalFloorData[scene].playerSpawnY
 
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server
 
-app.get('*', function (req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+app.get('/play', function (req, res) {
+    res.sendFile(__dirname + '/public/game.html');
   });
 
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/public/index.html');
+  });
 
 io.on('connection', function (socket) {
     console.log('a user connected');
@@ -50,6 +62,7 @@ io.on('connection', function (socket) {
     // send the current scene to the new player
     socket.emit('currentProjectiles', projectileList);
     // update all other players of the new player
+    socket.emit('currentTombstones' , tombstones)
     socket.broadcast.emit('newPlayer', players[socket.id]);
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
@@ -66,6 +79,7 @@ io.on('connection', function (socket) {
 
     socket.on('playerDeath', function(playerId){
         players[playerId].alive = false
+        tombstones.push({x: players[playerId].x,y: players[playerId].y})
         socket.broadcast.emit('playerDeath',playerId)
     })
 
@@ -90,18 +104,27 @@ io.on('connection', function (socket) {
         scene=newScene
         var change = true
         players[id].floorChange = true
+
+        //Check if all living players have made it to the door
         for(id in players){
-            if (players[id].floorChange != true){
+            if (players[id].floorChange != true && players[id].alive){
                 change = false
                 break
             }
         }
+        //Check if any enemies are still alive
+        // for(id in enemyList){
+        //     if(enemyList[id]){
+        //         change = false
+        //         break
+        //     }
+        // }
         if(change == true){
-            enemyList = floors[scene].enemyList
-            playerSpawnX = floors[scene].playerSpawnX
-            playerSpawnY = floors[scene].playerSpawnY
+            enemyList = populateFloor(scene)
+            tombstones = []
+            playerSpawnX = originalFloorData[scene].playerSpawnX
+            playerSpawnY = originalFloorData[scene].playerSpawnY
             io.emit('changeScene', scene)
-            console.log(scene)
         }
     })
 });
@@ -119,12 +142,11 @@ function update(){
                         console.log('Victory!')
                         setTimeout(function(){
                             scene = 'floor1'
-                            floors = Object.assign({}, originalFloors)
-                            console.log(floors)
-                            enemyList = floors[scene].enemyList
-                            playerSpawnX = floors[scene].playerSpawnX
-                            playerSpawnY = floors[scene].playerSpawnY
-                            io.emit('changeScene',scene)
+                            tombstones = []
+                            enemyList = populateFloor(scene)
+                            playerSpawnX = originalFloorData[scene].playerSpawnX
+                            playerSpawnY = originalFloorData[scene].playerSpawnY
+                            io.emit('Victory')
                         },5000)
                        
                     }

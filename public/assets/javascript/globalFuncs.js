@@ -149,7 +149,6 @@ function hitByEnemy(player, enemy){
 function hitByProjectile(player, projectile){
     //Check if the overlap still exists
     if(playerProjectileOverlap.world){
-        player.health -= 1
         updateHealthBar(player)
 
         //Temporarily destroy the on overlap event(player is invulnerable)
@@ -170,7 +169,13 @@ function hitByProjectile(player, projectile){
             player.setTint(0xff0000)
             setTimeout(function(){
                 // After a small amount of time player regains control
-                player.stats.control = true
+                player.health -= 1
+                if(player.health == 0){
+                    playerDeath(player)
+                }
+                else{
+                    player.stats.control = true
+                }
             },100)
         
     
@@ -182,11 +187,7 @@ function hitByProjectile(player, projectile){
                 playerProjectileOverlap = _this.physics.add.overlap(enemyProjectiles,player,hitByProjectile)
             },300)
         }
-        else{
-            playerDeath(player)
-        }
     }
-   
 }
 
 function playerDeath(player){
@@ -194,6 +195,9 @@ function playerDeath(player){
     player.setVelocityY(0)
     _this.physics.add.sprite(player.x,player.y,'tombstone')
     _this.player.visible = false
+    uiScene.add.text(8,80,'    YOU DIED     ',{fontSize: '32px'})
+    uiScene.add.text(12,116,' Reload the page to try again', {fontSize: '16px'})
+
     socket.emit('playerDeath',socket.id)
 }
 
@@ -328,13 +332,19 @@ function sockets() {
             if (players[ids[i]].playerId === socket.id) {
                 addPlayer(_this, players[ids[i]]); //creates _this.player
               }
-            else{
+            else if (players[ids[i]].alive){
                 addOtherPlayer(_this, players[ids[i]])
               }
         }
     });
 
+    socket.on('currentTombstones',function(tombstones){
+        for(var i = 0; i<tombstones.length; i++){
+            _this.add.sprite(tombstones[i].x,tombstones[i].y,'tombstone').setDepth(-1)
 
+
+        }
+    })
     socket.on('changeScene',function(scene){
         changeScene(scene)
     })
@@ -467,11 +477,18 @@ function sockets() {
     socket.on('playerDeath', function(playerId){
         _this.otherPlayers.getChildren().forEach(function(otherPlayer){
             if(otherPlayer.playerId == playerId){
-            _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone')
+            _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone').setDepth(-1)
             _this.otherPlayer.visible = false
             }
         })
     })
 
+    socket.on('Victory', function(){
+        setTimeout(function(){
+            location.assign('/')
+            uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
+            uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
+        },5000)
+    })
 }
 

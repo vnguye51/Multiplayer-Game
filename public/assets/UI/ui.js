@@ -12,6 +12,7 @@ class ui extends Phaser.Scene {
 
     create(){
         // healthbar = this.add.sprite(74,16,'healthbar',0)
+        
         healthbar = this.add.group()
         healthbar.createMultiple({key: 'healthbar', frame: [0] , repeat:4})
         // healthbar.scaleX = 0.5
@@ -22,5 +23,7 @@ class ui extends Phaser.Scene {
             child.scaleX = 0.5
             child.scaleY = 0.5
         })
+
+
     }
 }

@@ -35,6 +35,8 @@ class floor2 extends Phaser.Scene {
         //Assigns the input keys. 
         enemies = this.physics.add.group()
         enemyAttackGroup = this.physics.add.group()
+        enemyProjectiles = this.physics.add.group()
+
 
         definePlayerAnimations(this)
 

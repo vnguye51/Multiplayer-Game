@@ -103,6 +103,9 @@ Tier1Melee = function(x,y,health,id){
                         this.xvel = uvec[0]*this.speed
                         this.yvel = uvec[1]*this.speed
                     }
+                    else{
+                        this.state = 'seeking'
+                    }
                 }
     
             }
@@ -213,9 +216,8 @@ Bat = function (x,y,health,id){
                 this.health -= 1
             }
         }
-        var finalPos = queryCollisions(16,16,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
-        this.x = finalPos[0]
-        this.y = finalPos[1]
+        this.x += this.xvel
+        this.y += this.yvel
     }
 }
 
@@ -325,9 +327,8 @@ Whelp = function (x,y,health,id){
             }
         }
 
-        var finalPos = queryCollisions(32,32,this.x,this.y,this.xvel,this.yvel,collisionMap,collisionArray)
-        this.x = finalPos[0]
-        this.y = finalPos[1]
+        this.x += this.xvel
+        this.y += this.yvel
     }
 }
 
