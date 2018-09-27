@@ -167,7 +167,6 @@ class floor1 extends Phaser.Scene {
                     this.player.setVelocityX(0);
                 }
                 if (this.cursors.up.isDown){
-                    console.log(this.cursors.up.isDown)
                     this.player.setVelocityY(-120);
                     this.player.anims.play('up',true) 
                     this.player.currentAnim = 'up'

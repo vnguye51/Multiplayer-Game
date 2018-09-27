@@ -84,12 +84,14 @@ io.on('connection', function (socket) {
     })
 
     socket.on('playerMovement', function (movementData) {
-        players[socket.id].x = movementData.x;
-        players[socket.id].y = movementData.y;
-        players[socket.id].rotation = movementData.rotation;
-        players[socket.id].currentAnim = movementData.currentAnim
-        // emit a message to all players about the player that moved
-        socket.broadcast.emit('playerMoved', players[socket.id]);
+        if(players[socket.id]){
+            players[socket.id].x = movementData.x;
+            players[socket.id].y = movementData.y;
+            players[socket.id].rotation = movementData.rotation;
+            players[socket.id].currentAnim = movementData.currentAnim
+            // emit a message to all players about the player that moved
+            socket.broadcast.emit('playerMoved', players[socket.id]);
+        }
       });
 
     socket.on('enemyHit', function(enemyID,dir){
@@ -177,7 +179,6 @@ function update(){
 }
 
 update()
-//commentsss
 // Start our server so that it can begin listening to client requests.
 server.listen(PORT, function() {
   // Log (server-side) when our server has started
