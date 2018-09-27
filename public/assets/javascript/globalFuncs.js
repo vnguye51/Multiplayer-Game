@@ -1,8 +1,13 @@
 
 function changeScene(scene) {
     socket.disconnect();
-    _this.player = null;
-    _this.scene.start(scene);
+    if(_this.player.health<= 0){
+        location.assign('/')
+    }
+    else{
+        _this.player = null;
+        _this.scene.start(scene);
+    }
 }
 
 
@@ -487,6 +492,7 @@ function sockets() {
         uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
         uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
         setTimeout(function(){
+            socket.disconnect();
             location.assign('/')
         },5000)
     })

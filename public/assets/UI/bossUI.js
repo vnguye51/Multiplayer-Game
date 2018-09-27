@@ -18,7 +18,7 @@ class BossUI extends Phaser.Scene {
         this.add.sprite(160,216,'bossHealthTop')
         socket.on('updateBossHealth',function(health){
             bossHealth.scaleX = (health/40)
-            bossHealth.x = 160 - (40-health)*288/40/2
+            bossHealth.x = 160 - (80-health)*288/80/2
         })
     }
 }

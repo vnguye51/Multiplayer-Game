@@ -18,11 +18,11 @@ function spawnNine(x0,y0,list,name){
 
 
 spawnNine(140,200,enemyList1,'Tier1Melee')
-spawnNine(460,300,enemyList1,'Tier1Melee')
-spawnNine(300,106,enemyList1,'Tier1Melee')
-spawnNine(260,132,enemyList1,'Tier1Melee')
-spawnNine(140,100,enemyList1,'Tier1Melee')
-spawnNine(100,300,enemyList1,'Tier1Melee')
+// spawnNine(460,300,enemyList1,'Tier1Melee')
+// spawnNine(300,106,enemyList1,'Tier1Melee')
+// spawnNine(260,132,enemyList1,'Tier1Melee')
+// spawnNine(140,100,enemyList1,'Tier1Melee')
+// spawnNine(100,300,enemyList1,'Tier1Melee')
 
 var enemyList2 = []
 function spawnSixty(x0,y0,list,name){
@@ -39,8 +39,8 @@ function spawnSixty(x0,y0,list,name){
     }
 }
 spawnSixty(240,120,enemyList2,'Bat')
-spawnSixty(240,180,enemyList2,'Bat')
-spawnSixty(240,240,enemyList2,'Bat')
+// spawnSixty(240,180,enemyList2,'Bat')
+// spawnSixty(240,240,enemyList2,'Bat')
 
 
 var enemyList3 = []
