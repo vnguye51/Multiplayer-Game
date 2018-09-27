@@ -21,7 +21,8 @@ var enemyList3 = []
 
 
 var enemyList4 = []
-enemyList4[enemyList4.length] = new enemies.Whelp(300,140,40,enemyList4.length)
+enemyList4[enemyList4.length] = new enemies.Whelp(300,140,5,enemyList4.length)
+
 
 var floor1 = {
     enemyList: enemyList1,
@@ -47,8 +48,17 @@ var floor4 = {
     playerSpawnY: 604,
 }
 
-module.exports = {
-    floor1: floor1,
-    floor2: floor2,
-    floor3: floor3,
-    floor4: floor4}
+Floors = function(){
+    this.floor1 = floor1,
+    this.floor2 = floor2,
+    this.floor3 = floor3,
+    this.floor4 = floor4
+}
+
+// module.exports = {
+//     floor1: floor1,
+//     floor2: floor2,
+//     floor3: floor3,
+//     floor4: floor4}
+
+module.exports.Floors = Floors

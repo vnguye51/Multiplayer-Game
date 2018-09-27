@@ -5,7 +5,11 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
-var floors = require('./serverscripts/floors')
+var Floors = require('./serverscripts/floors').Floors
+var originalFloors = new Floors()
+var floors = Object.assign({},originalFloors)
+console.log(originalFloors)
+console.log(floors)
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
@@ -107,25 +111,30 @@ function update(){
     //Called every frame
     setTimeout(function(){
         for(key in enemyList){
-            enemyList[key].update(players,enemyList,projectileList)
-            if(enemyList[key].boss){
-                io.emit('updateBossHealth',enemyList[key].health)
-                if(enemyList[key].health == 0){
-                    console.log('Victory!')
-                    setTimeout(function(){
-                        scene = 'floor1'
-                        enemyList = floors[scene].enemyList
-                        playerSpawnX = floors[scene].playerSpawnX
-                        playerSpawnY = floors[scene].playerSpawnY
-                        io.emit('changeScene',scene)
-                    },5000)
-                   
+            if(enemyList[key]){
+                enemyList[key].update(players,enemyList,projectileList)
+                if(enemyList[key].boss){
+                    io.emit('updateBossHealth',enemyList[key].health)
+                    if(enemyList[key].health == 0){
+                        console.log('Victory!')
+                        setTimeout(function(){
+                            scene = 'floor1'
+                            floors = Object.assign({}, originalFloors)
+                            console.log(floors)
+                            enemyList = floors[scene].enemyList
+                            playerSpawnX = floors[scene].playerSpawnX
+                            playerSpawnY = floors[scene].playerSpawnY
+                            io.emit('changeScene',scene)
+                        },5000)
+                       
+                    }
+                }
+                if(enemyList[key].health <= 0){
+                    delete enemyList[key]
+                    io.emit('enemyDeath',key)
                 }
             }
-            if(enemyList[key].health <= 0){
-                delete enemyList[key]
-                io.emit('enemyDeath',key)
-            }
+            
         }
         for(key in projectileList){
             if(projectileList[key]){

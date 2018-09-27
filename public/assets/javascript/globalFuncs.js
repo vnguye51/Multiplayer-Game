@@ -266,7 +266,6 @@ function updateProjectile(_this,projectileInfo){
         if(projectileInfo && projectileInfo.id == projectile.id){
             projectile.x = projectileInfo.x
             projectile.y = projectileInfo.y
-            // projectile.anims.play('fireball',true)
         }
     })
 }
