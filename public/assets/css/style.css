@@ -2,7 +2,7 @@ body{
     background-color: rgb(4, 5, 20)
 }
 
-div{
+#buttonContainer{
     margin-top: 180px;
     text-align: center;
 }
@@ -14,6 +14,12 @@ button{
     font-size: 32px;
 }
 
+#game{
+    margin-top: 80px;
+    text-align: center;
+}
+
 canvas{
     margin: 0 auto;
+    border: solid 2px gray;
 }
