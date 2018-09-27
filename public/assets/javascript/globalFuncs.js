@@ -494,7 +494,7 @@ function sockets() {
         setTimeout(function(){
             socket.disconnect();
             location.assign('/')
-        },5000)
+        },10000)
     })
 }
 

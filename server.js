@@ -143,16 +143,22 @@ function update(){
                 if(enemyList[key].boss){
                     io.emit('updateBossHealth',enemyList[key].health)
                     if(enemyList[key].health == 0){
-                        console.log('Victory!')
+                        io.emit('Victory')
                         setTimeout(function(){
                             scene = 'floor1'
                             tombstones = []
                             enemyList = populateFloor(scene)
                             playerSpawnX = originalFloorData[scene].playerSpawnX
                             playerSpawnY = originalFloorData[scene].playerSpawnY
-                            io.emit('Victory')
+                            function getConnectedSockets() {
+                                return Object.values(io.of("/play").connected);
+                            }
+                            
+                            getConnectedSockets().forEach(function(s) {
+                                s.disconnect(true);
+                            });
                         },5000)
-                       
+
                     }
                 }
                 if(enemyList[key].health <= 0){
