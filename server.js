@@ -180,7 +180,7 @@ function update(){
         io.emit('updateProjectiles', projectileList)
 
         update()
-    }, 16)
+    }, 33)
 }
 
 function populateFloor(floor){
