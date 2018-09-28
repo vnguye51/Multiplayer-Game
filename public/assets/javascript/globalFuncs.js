@@ -492,7 +492,7 @@ function sockets() {
         _this.otherPlayers.getChildren().forEach(function(otherPlayer){
             if(otherPlayer.playerId == playerId){
             _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone').setDepth(-1)
-            _this.otherPlayer.visible = false
+            otherPlayer.visible = false
             }
         })
     })
