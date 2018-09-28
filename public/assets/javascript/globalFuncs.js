@@ -196,6 +196,9 @@ function hitByProjectile(player, projectile){
                 playerProjectileOverlap = _this.physics.add.overlap(enemyProjectiles,player,hitByProjectile)
             },300)
         }
+        else{
+            playerDeath(player)
+        }
     }
 }
 
