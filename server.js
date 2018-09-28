@@ -1,6 +1,6 @@
 // Dependencies
 var express = require("express");
-var enemies = require('./public/assets/enemies/scripts/enemiesServer').enemies
+var enemies = require('./serverscripts/enemyData').enemies
 
 // Create an instance of the express app.
 var app = express();
@@ -8,15 +8,7 @@ var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
 var originalFloorData = require('./serverscripts/floorData').floors
-function populateFloor(floor){
-    var enemyList = []
-    var enemyData = originalFloorData[floor].enemyList
-    for(var i=0;i<enemyData.length;i++){
-        var enemyConstructor = enemies[enemyData[i].name]
-        enemyList.push(new enemyConstructor(enemyData[i].x,enemyData[i].y,enemyData[i].health,enemyData[i].id))
-    }
-    return enemyList
-}
+
 
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
@@ -134,6 +126,13 @@ io.on('connection', function (socket) {
 });
 
 
+update()
+// Start our server so that it can begin listening to client requests.
+server.listen(PORT, function() {
+  // Log (server-side) when our server has started
+  console.log("Server listening on: http://localhost:" + PORT);
+});
+
 function update(){
     //Called every frame
     setTimeout(function(){
@@ -181,12 +180,16 @@ function update(){
         io.emit('updateProjectiles', projectileList)
 
         update()
-    }, 33)
+    }, 16)
 }
 
-update()
-// Start our server so that it can begin listening to client requests.
-server.listen(PORT, function() {
-  // Log (server-side) when our server has started
-  console.log("Server listening on: http://localhost:" + PORT);
-});
+function populateFloor(floor){
+    var enemyList = []
+    var enemyData = originalFloorData[floor].enemyList
+    for(var i=0;i<enemyData.length;i++){
+        var enemyConstructor = enemies[enemyData[i].name]
+        enemyList.push(new enemyConstructor(enemyData[i].x,enemyData[i].y,enemyData[i].health,enemyData[i].id))
+    }
+    return enemyList
+}
+

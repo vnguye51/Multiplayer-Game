@@ -2,7 +2,7 @@
 //Constructor for basic enemy
 //Wanders around until a player enters its radius
 //Then chases that player
-var projectiles = require('../../../../serverscripts/projectiles.js').projectiles
+var projectiles = require('./projectiles.js').projectiles
 
 function joinCollisionLayers(layers){
     var collisionArray = []
@@ -22,7 +22,7 @@ function joinCollisionLayers(layers){
     return collisionArray
 }
 
-var collisionMap = require('../../tilemap/Map1.json')
+var collisionMap = require('../public/assets/tilemap/Map1.json')
 var collisionArray = (joinCollisionLayers([collisionMap.layers[1],collisionMap.layers[2]]))
 
 Tier1Melee = function(x,y,health,id){   

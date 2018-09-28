@@ -131,8 +131,12 @@ function hitByEnemy(player, enemy){
             //Color the player a little to show damage
             player.setTintFill(0xffffff)
             setTimeout(function(){
-                // After a small amount of time player regains control
-                player.stats.control = true
+                if(player.health <= 0){
+                    playerDeath(player)
+                }
+                else{
+                    player.stats.control = true
+                }
             },100)
         
     
@@ -142,7 +146,7 @@ function hitByEnemy(player, enemy){
                 player.clearTint()
                 // Readd the overlap event
                 playerEnemyOverlap = _this.physics.add.overlap(enemies,player,hitByEnemy)
-            },300)
+            },400)
         }
         else{
             playerDeath(player)
@@ -154,6 +158,7 @@ function hitByEnemy(player, enemy){
 function hitByProjectile(player, projectile){
     //Check if the overlap still exists
     if(playerProjectileOverlap.world){
+        player.health -= 1
         updateHealthBar(player)
 
         //Temporarily destroy the on overlap event(player is invulnerable)
@@ -174,8 +179,7 @@ function hitByProjectile(player, projectile){
             player.setTint(0xff0000)
             setTimeout(function(){
                 // After a small amount of time player regains control
-                player.health -= 1
-                if(player.health == 0){
+                if(player.health <= 0){
                     playerDeath(player)
                 }
                 else{
