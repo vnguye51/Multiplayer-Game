@@ -47,7 +47,9 @@ function meleeAttack(){
         if(attackCollider.world){
             attackCollider.destroy()
         }
-        _this.player.stats.control = true
+        if(_this.player.health >0){
+            _this.player.stats.control = true
+        }
         attack.destroy()
         if(dir == 'left'){
             _this.player.anims.play('left',true)
