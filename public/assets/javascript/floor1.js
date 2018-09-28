@@ -10,7 +10,6 @@ class floor1 extends Phaser.Scene {
     preload () //preload occurs prior to the scene(game) being instantiated
     {
         //Load player assets
-        this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
         this.load.image('tombstone','assets/items/tombstone.png')
         this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
         this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
@@ -81,10 +80,6 @@ class floor1 extends Phaser.Scene {
             socket.emit('floorChange','floor2',socket.id)
         },this)
 
-        // Locks pointer on mousedown
-        game.canvas.addEventListener('mousedown', function () {
-            game.input.mouse.requestPointerLock();
-        });
 
         //Enemy Animations
         this.anims.create({

@@ -10,7 +10,6 @@ class floor2 extends Phaser.Scene {
     preload () //preload occurs prior to the scene(game) being instantiated
     {
         //Load player assets
-        this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
         this.load.image('tombstone','assets/items/tombstone.png')
         this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
         this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
@@ -20,7 +19,6 @@ class floor2 extends Phaser.Scene {
         this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
         
         //Load enemy assets
-        this.load.image('enemy','assets/enemies/sprites/Enemy.png')
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
@@ -87,10 +85,6 @@ class floor2 extends Phaser.Scene {
         objectLayer.setDepth(-1)
 
         //Player Inputs go here
-        // Locks pointer on mousedown
-        game.canvas.addEventListener('mousedown', function () {
-            game.input.mouse.requestPointerLock();
-        });
 
        //Enemy Animations
        this.anims.create({
