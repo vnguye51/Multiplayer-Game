@@ -19,9 +19,10 @@ var players = {};
 var tombstones = []
 var scene = 'floor1'
 var enemyList = populateFloor(scene);
-var projectileList = []
+var projectiles ={}
 var playerSpawnX = originalFloorData[scene].playerSpawnX
 var playerSpawnY = originalFloorData[scene].playerSpawnY
+var projectileIndex = {index: 0}
 
 
 app.use(express.static(__dirname + '/public'));
@@ -52,7 +53,7 @@ io.on('connection', function (socket) {
     // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
     // send the current scene to the new player
-    socket.emit('currentProjectiles', projectileList);
+    socket.emit('currentProjectiles', projectiles);
     // update all other players of the new player
     socket.emit('currentTombstones' , tombstones)
     socket.broadcast.emit('newPlayer', players[socket.id]);
@@ -138,7 +139,7 @@ function update(){
     setTimeout(function(){
         for(key in enemyList){
             if(enemyList[key]){
-                enemyList[key].update(players,enemyList,projectileList)
+                enemyList[key].update(players,enemyList,projectiles,projectileIndex)
                 if(enemyList[key].boss){
                     io.emit('updateBossHealth',enemyList[key].health)
                     if(enemyList[key].health == 0){
@@ -167,17 +168,19 @@ function update(){
             }
             
         }
-        for(key in projectileList){
-            if(projectileList[key]){
-                projectileList[key].update()
-                if(projectileList[key].x < -50 || projectileList[key].x > 3000 || projectileList[key].y < -50 || projectileList[key].y > 3000){
-                    io.emit('projectileDeath',key)
-                    delete projectileList[key]
-                }
+        if(projectileIndex.index >= Number.MAX_SAFE_INTEGER-1000){
+            projectileIndex.index = 0
+        }
+        for(key in projectiles){
+            projectiles[key].update()
+            if(projectiles[key].x < -50 || projectiles[key].x > 3000 || projectiles[key].y < -50 || projectiles[key].y > 3000){
+                io.emit('projectileDeath',projectiles[key].id)
+                delete projectiles[key]
             }
         }
+
         io.emit('updateEnemies',enemyList)
-        io.emit('updateProjectiles', projectileList)
+        io.emit('updateProjectiles', projectiles)
 
         update()
     }, 33)

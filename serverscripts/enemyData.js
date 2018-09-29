@@ -2,7 +2,7 @@
 //Constructor for basic enemy
 //Wanders around until a player enters its radius
 //Then chases that player
-var projectiles = require('./projectiles.js').projectiles
+var projectileData = require('./projectiles.js').projectiles
 
 function joinCollisionLayers(layers){
     var collisionArray = []
@@ -246,7 +246,7 @@ Whelp = function (x,y,health,id){
         this.health -= 1
     }
 
-    this.update = function(players,enemyList,projectileList){
+    this.update = function(players,enemyList,projectiles,projectileIndex){
         if(this.control){
             if(Object.keys(players).length!=0){
                 if(this.state == 'seeking'){
@@ -294,15 +294,16 @@ Whelp = function (x,y,health,id){
                             if(this.target != null){
                                 this.attackRot = angleBetween(this.x,this.y,this.target.x,this.target.y)
                             }
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,4,projectileList.length))
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot+Math.PI/3,4,projectileList.length))
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot-Math.PI/3,4,projectileList.length))
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot,4,projectileIndex.index));projectileIndex.index++;
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot+Math.PI/3,4,projectileIndex.index));projectileIndex.index++;
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot-Math.PI/3,4,projectileIndex.index));projectileIndex.index++;
+
                         }
                     }
                     else if(this.pattern == 1){
                         if(this.fireTimer % 5 == 0){
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,4,projectileList.length))
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot + Math.PI,4,projectileList.length))
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot,4,projectileIndex.index));projectileIndex.index++;
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot + Math.PI,4,projectileIndex.index));projectileIndex.index++;
                             this.attackRot += 2*Math.PI/24
                         }
                     }
@@ -312,7 +313,7 @@ Whelp = function (x,y,health,id){
                             if(this.target != null){
                                 this.attackRot = angleBetween(this.x,this.y,this.target.x,this.target.y)
                             }
-                            projectileList.push(new projectiles.linearProjectile(this.x,this.y,this.attackRot,6,projectileList.length))
+                            projectiles[projectileIndex.index]=(new projectileData.linearProjectile(this.x,this.y,this.attackRot,6,projectileIndex.index));projectileIndex.index++;
                         }
                     }
 

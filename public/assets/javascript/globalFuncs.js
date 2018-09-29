@@ -397,17 +397,24 @@ function sockets() {
     });
 
     socket.on('currentProjectiles', function (projectiles){
-        var ids = Object.keys(projectiles)
-        for (var i = 0; i<ids.length; i++) {
-            if(projectiles[ids[i]]){
-                addProjectile(_this, projectiles[ids[i]]);
+        for (id in projectiles) {
+            if(projectiles[id]){
+                addProjectile(_this, projectiles[id]);
             }
         }
     })
 
     socket.on('updateProjectiles', function (projectiles) {
+        //Dangerous nested for loop probably needs to be removed at some point for now it is serviceable
+        //A fix would be to not use getChildren()
         for (id in projectiles) {
-            if(!enemyProjectiles.getChildren()[id]){
+            var projectileExists = false
+            enemyProjectiles.getChildren().forEach(function(projectile){
+                if(projectile.id == id){
+                    projectileExists = true
+                }
+            })
+            if(!projectileExists){
                 addProjectile(_this,projectiles[id])
             }
             updateProjectile(_this, projectiles[id]);
