@@ -11,7 +11,7 @@ class lobby extends Phaser.Scene {
 
     create(){
         _this = this
-        socket = io()
+        socket = io('http://52.53.39.113:80')
         socket.on('changeScene',function(scene){
                 socket.disconnect();
                 _this.scene.start(scene);

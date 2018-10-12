@@ -151,7 +151,10 @@ function update(){
                             playerSpawnX = originalFloorData[scene].playerSpawnX
                             playerSpawnY = originalFloorData[scene].playerSpawnY
                             function getConnectedSockets() {
-                                return Object.values(io.of("/play").connected);
+                                var vals = Object.keys(io.of("/play").connected).map(function(key) {
+                                    return io.of("/play").connected[key];
+                                });
+                                return vals
                             }
                             
                             getConnectedSockets().forEach(function(s) {

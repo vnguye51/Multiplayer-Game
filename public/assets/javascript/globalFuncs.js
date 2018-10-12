@@ -337,7 +337,7 @@ function constrainReticle(reticle)
 
 function sockets() {
     //Attach socket to the game for ease of access
-    socket = io()
+    socket = io('http://52.53.39.113:80')
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client
     socket.on('currentPlayers', function (players) {
