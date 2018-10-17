@@ -11,7 +11,7 @@ var originalFloorData = require('./serverscripts/floorData').floors
 
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
-var PORT = process.env.PORT || 4040;
+var PORT = 3000;
 
 
 var players = {};
