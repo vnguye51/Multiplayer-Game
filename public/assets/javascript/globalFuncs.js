@@ -337,7 +337,10 @@ function constrainReticle(reticle)
 
 function sockets() {
     //Attach socket to the game for ease of access
-    socket = io('http://52.53.39.113:80')
+    // socket = io('https://52.53.200.224:443')
+    socket = io('https://journeyabyss.com')
+    socket = io()
+
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client
     socket.on('currentPlayers', function (players) {

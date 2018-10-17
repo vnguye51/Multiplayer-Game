@@ -1,0 +1,51 @@
+body{
+    background-color: rgb(4, 5, 20);
+}
+
+#main{
+    margin: 0 80px,
+}
+
+#buttonContainer{
+    margin-top: 180px;
+    margin-bottom: 100px;
+    text-align: center;
+}
+
+#infoBox{
+    margin: 0 auto;
+    width: 640px;
+    color: whitesmoke;
+    border: solid 2px gray;
+    text-align: center;
+}
+
+button{
+    height:40px; 
+    width:400px; 
+    margin: 0 auto;
+    font-size: 32px;
+}
+
+#game{
+    margin-top: 80px;
+    text-align: center;
+}
+
+canvas{
+    margin: 0 auto;
+    border: solid 2px gray;
+}
+
+.infoElement{
+    float: left;
+    width: 33%
+}
+
+a{
+    color: whitesmoke;
+}
+
+#infoHeader{
+    margin-bottom: 40px;
+}
