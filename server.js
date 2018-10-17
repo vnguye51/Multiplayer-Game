@@ -1,8 +1,7 @@
 // Dependencies
 var express = require("express");
 var enemies = require('./serverscripts/enemyData').enemies
-
-// Create an instance of the express app.
+require('dotenv').config()// Create an instance of the express app.
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
