@@ -10,13 +10,15 @@ class floor2 extends Phaser.Scene {
     preload () //preload occurs prior to the scene(game) being instantiated
     {
         //Load player assets
-        this.load.image('pointer', 'assets/CharacterSprites/pointer.png')
-        this.load.image('player','assets/CharacterSprites/Player_arrow.png')
-        this.load.image('playerAttack','assets/CharacterSprites/attack-tri.png')
-        this.load.image('playerMeleeAttack', 'assets/CharacterSprites/MeleeAttack.png')
+        this.load.image('tombstone','assets/items/tombstone.png')
+        this.load.spritesheet('player','assets/CharacterSprites/notlink.png',{frameWidth: 16,frameHeight:16})
+        this.load.image('playerMeleeAttack', 'assets/items/woodSword.png')
         
         //Load enemy assets
-        this.load.image('enemy','assets/enemies/sprites/Enemy.png')
+        this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
+        this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
+        
+        //Load enemy assets
     
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
@@ -26,27 +28,32 @@ class floor2 extends Phaser.Scene {
     
     create () //Occurs when the scene is instantiated
     {
-        console.log('create!')
+        this.scene.launch('UI')
         _this = this
         //Assigns the input keys. 
         enemies = this.physics.add.group()
+        enemyAttackGroup = this.physics.add.group()
+        enemyProjectiles = this.physics.add.group()
+
+
+        definePlayerAnimations(this)
 
         this.cursors = this.input.keyboard.addKeys({ 
             'up': Phaser.Input.Keyboard.KeyCodes.W, 
             'down': Phaser.Input.Keyboard.KeyCodes.S,
             'left': Phaser.Input.Keyboard.KeyCodes.A,
-            'right': Phaser.Input.Keyboard.KeyCodes.D });
+            'right': Phaser.Input.Keyboard.KeyCodes.D,
+            'attack': Phaser.Input.Keyboard.KeyCodes.SPACE });
         
         this.otherPlayers = this.physics.add.group()
 
         
         sockets();
 
-    
-        reticle = this.physics.add.sprite(180, 120, 'pointer');
 
         //camera
-        this.cameras.main.setSize(400, 300);
+        this.cameras.main.setSize(320, 240);
+        this.cameras.main.setBounds(0,0,640,480)
 
         
 
@@ -72,34 +79,44 @@ class floor2 extends Phaser.Scene {
             _this.player.body.velocity.x = 0
             _this.player.body.velocity.y = 0
             _this.player.visible = false
-            _this.socket.emit('floorChange','floor1',_this.socket.id)
+            socket.emit('floorChange','floor4',socket.id)
         },this)
 
         objectLayer.setDepth(-1)
 
         //Player Inputs go here
-        // Locks pointer on mousedown
-        game.canvas.addEventListener('mousedown', function () {
-            game.input.mouse.requestPointerLock();
-        });
 
-        // Exit pointer lock when Q or escape (by default) is pressed.
-        this.input.keyboard.on('keydown_Q', function (event) {
-            if (game.input.mouse.locked)
-                game.input.mouse.releasePointerLock();
-        }, 0, this);
+       //Enemy Animations
+       this.anims.create({
+        key: 'lancerDown',
+        frames: this.anims.generateFrameNumbers('lancer', { start: 0, end: 3 }),
+        frameRate: 10,
+        repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerRight',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 4, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerLeft',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 8, end: 11 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        this.anims.create({
+            key: 'lancerUp',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 12, end: 15 }),
+            frameRate: 10,
+            repeat: -1
+        })
 
-        // Move reticle upon locked pointer move
-        this.input.on('pointermove', function (pointer) {
-            if (this.input.mouse.locked)
-            {
-                reticle.x += pointer.movementX;
-                reticle.y += pointer.movementY;
-            }
-        }, this);
-
-        this.input.on('pointerdown',function(){
-            meleeAttack()
+        this.anims.create({
+            key: 'bat',
+            frames: this.anims.generateFrameNumbers('bat', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
         })
 
     }
@@ -107,65 +124,57 @@ class floor2 extends Phaser.Scene {
     update() //Update is called every frame
     {   // Only run update code once the player is connected
         if(this.player){
+            socket.emit('playerMovement', { x: _this.player.x, y: _this.player.y, rotation: _this.player.rotation, currentAnim: _this.player.currentAnim});
+
             if(this.player.stats.control == true){
-    
+
                 if (this.cursors.left.isDown){
                     this.player.setVelocityX(-120);
-            
+                    this.player.anims.play('left',true)
+                    this.player.currentAnim = 'left'
+                    this.player.flipX = true
+                    this.player.direction = 'left'
                 }
                 else if (this.cursors.right.isDown){
                     this.player.setVelocityX(120);
-            
+                    this.player.anims.play('right',true)
+                    this.player.flipX = false
+                    this.player.direction = 'right'
+                    this.player.currentAnim = 'right'
+
                 }
                 else{
                     this.player.setVelocityX(0);
                 }
                 if (this.cursors.up.isDown){
                     this.player.setVelocityY(-120);
-            
+                    this.player.anims.play('up',true) 
+                    this.player.currentAnim = 'up'
+     
+                    this.player.direction = 'up'      
                 }
                 else if (this.cursors.down.isDown){
                     this.player.setVelocityY(120);
-            
+                    this.player.anims.play('down',true)
+                    this.player.currentAnim = 'down'
+                    this.player.direction = 'down'      
+
                 }
                 else{
                     this.player.setVelocityY(0);
                 }
+                if(!this.cursors.left.isDown && !this.cursors.right.isDown && !this.cursors.up.isDown && !this.cursors.down.isDown){
+                    this.player.anims.stop()
+                    this.player.currentAnim = null
+                }
+                if(this.cursors.attack.isDown && !spaceIsPressed){
+                    meleeAttack()
+                    spaceIsPressed = true
+                }
+                else if(!this.cursors.attack.isDown){
+                    spaceIsPressed = false
+                }
             }
-            
-            //player faces reticle
-            this.player.rotation = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
-            var attackDirect = Phaser.Math.Angle.Between(this.player.x, this.player.y, reticle.x, reticle.y);
-    
-            // Makes reticle move with player
-            reticle.body.velocity.x = this.player.body.velocity.x;
-            reticle.body.velocity.y = this.player.body.velocity.y;
-    
-            // Constrain position of reticle
-            constrainReticle(reticle);
-            constrainVelocity(reticle);
-    
-            var playerCoordX = this.player.x;
-            var playerCoordY = this.player.y
-    
-    
-            ////Emit Socket Signals////
-            // emit player movement
-            var x = this.player.x;
-            var y = this.player.y;
-            var rotation = this.player.rotation;
-    
-            //If player position changed
-            if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y || rotation !== this.player.oldPosition.rotation)) {
-                this.socket.emit('playerMovement', { x: this.player.x, y: this.player.y, rotation: this.player.rotation});
-            }
-            
-            // save old position data
-            this.player.oldPosition = {
-            x: this.player.x,
-            y: this.player.y,
-            rotation: this.player.rotation,
-            };
         }
     }
 }

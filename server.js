@@ -1,36 +1,39 @@
 // Dependencies
 var express = require("express");
-// Create an instance of the express app.
+var enemies = require('./serverscripts/enemyData').enemies
+require('dotenv').config()// Create an instance of the express app.
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
-var collisionMap = require('./public/assets/tilemap/Map1.json')
-var enemies = require('./public/assets/enemies/scripts/enemiesServer.js').enemies
-var floors = require('./serverscripts/floors')
+var originalFloorData = require('./serverscripts/floorData').floors
+
+
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = process.env.PORT || 4040;
 
 
 var players = {};
+var tombstones = []
 var scene = 'floor1'
-var enemyList = floors[scene].enemyList;
-var playerSpawnX = floors[scene].playerSpawnX
-var playerSpawnY = floors[scene].playerSpawnY
+var enemyList = populateFloor(scene);
+var projectiles ={}
+var playerSpawnX = originalFloorData[scene].playerSpawnX
+var playerSpawnY = originalFloorData[scene].playerSpawnY
+var projectileIndex = {index: 0}
 
-// for(var i=0; i<3; i++){
-//     enemyList[i] = new enemies.Tier1Melee(100+100*i,400,3,i)
-// }
 
 app.use(express.static(__dirname + '/public'));
 //Allow static files in the public folder to be retrieved from server
 
-app.get('*', function (req, res) {
-    res.sendFile(__dirname + '/public/index.html');
-    
+app.get('/play', function (req, res) {
+    res.sendFile(__dirname + '/public/game.html');
   });
 
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/public/index.html');
+  });
 
 io.on('connection', function (socket) {
     console.log('a user connected');
@@ -39,17 +42,20 @@ io.on('connection', function (socket) {
         rotation: 0,
         x: playerSpawnX,
         y: playerSpawnY,
+        currentAnim: null,
         playerId: socket.id,
         nextFloor: false,
+        alive: true,
     };
     // send the players object to the new player
     socket.emit('currentPlayers', players);
     // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
     // send the current scene to the new player
+    socket.emit('currentProjectiles', projectiles);
     // update all other players of the new player
+    socket.emit('currentTombstones' , tombstones)
     socket.broadcast.emit('newPlayer', players[socket.id]);
-
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
         console.log('user disconnected');
@@ -59,132 +65,136 @@ io.on('connection', function (socket) {
         io.emit('disconnect', socket.id);
     });
 
+    socket.on('firstConnect',function(){
+        socket.emit('changeScene',scene)
+    })
+
+    socket.on('playerDeath', function(playerId){
+        players[playerId].alive = false
+        tombstones.push({x: players[playerId].x,y: players[playerId].y})
+        socket.broadcast.emit('playerDeath',playerId)
+    })
+
     socket.on('playerMovement', function (movementData) {
-        players[socket.id].x = movementData.x;
-        players[socket.id].y = movementData.y;
-        players[socket.id].rotation = movementData.rotation;
-        // emit a message to all players about the player that moved
-        socket.broadcast.emit('playerMoved', players[socket.id]);
+        if(players[socket.id]){
+            players[socket.id].x = movementData.x;
+            players[socket.id].y = movementData.y;
+            players[socket.id].rotation = movementData.rotation;
+            players[socket.id].currentAnim = movementData.currentAnim
+            // emit a message to all players about the player that moved
+            socket.broadcast.emit('playerMoved', players[socket.id]);
+        }
       });
 
-    socket.on('enemyHit', function(enemyID){
+    socket.on('enemyHit', function(enemyID,dir){
         if(enemyList[enemyID]){
-
-            enemyList[enemyID].health -= 1;
-            if(enemyList[enemyID].health <= 0){
-                delete enemyList[enemyID]
-                socket.emit('enemyDeath',enemyID)
-                socket.broadcast.emit('enemyDeath',enemyID)
-            }
+            enemyList[enemyID].knockback(dir)
         }
     })
 
 
-    socket.on('floorChange', function(scene,id){
+    socket.on('floorChange', function(newScene,id){
         //Check if all players are attempting to change floors
+        scene=newScene
         var change = true
-        players[id].floorChange = true
+        if(players[id]){
+            players[id].floorChange = true
+        }
+
+        //Check if all living players have made it to the door
         for(id in players){
-            if (players[id].floorChange != true){
+            if (players[id].floorChange != true && players[id].alive){
                 change = false
                 break
             }
         }
+        //Check if any enemies are still alive
+        // for(id in enemyList){
+        //     if(enemyList[id]){
+        //         change = false
+        //         break
+        //     }
+        // }
         if(change == true){
-            enemyList = floors[scene].enemyList
-            playerSpawnX = floors[scene].playerSpawnX
-            playerSpawnY = floors[scene].playerSpawnY
-            io.emit('currentScene', scene)
+            enemyList = populateFloor(scene)
+            tombstones = []
+            playerSpawnX = originalFloorData[scene].playerSpawnX
+            playerSpawnY = originalFloorData[scene].playerSpawnY
+            io.emit('changeScene', scene)
         }
     })
 });
 
-function updateEnemy(){
-    //Called every frame
-    setTimeout(function(){
-        for(key in enemyList){
-            enemyList[key].update(players)
-        }
-        io.emit('updateEnemies',enemyList)
-        updateEnemy()
-    },33)
-}
 
-
-
-updateEnemy()
-
+update()
 // Start our server so that it can begin listening to client requests.
 server.listen(PORT, function() {
   // Log (server-side) when our server has started
   console.log("Server listening on: http://localhost:" + PORT);
 });
 
-///INCOMPLETE 
-///PORTING THE JSON COLLISION INFO TO THE SERVER///
-function queryCollisions(width,height,xpos,ypos,xvel,yvel,map){
-    //Horizontal Collision
-    if (place_meeting(xpos+xvel,ypos,width,height,map)){	
-        while(!place_meeting(xpos+xvel,ypos,width,height,map)){
-            xpos += Math.sign(xvel);
+function update(){
+    //Called every frame
+    setTimeout(function(){
+        for(key in enemyList){
+            if(enemyList[key]){
+                enemyList[key].update(players,enemyList,projectiles,projectileIndex)
+                if(enemyList[key].boss){
+                    io.emit('updateBossHealth',enemyList[key].health)
+                    if(enemyList[key].health == 0){
+                        io.emit('Victory')
+                        setTimeout(function(){
+                            scene = 'floor1'
+                            tombstones = []
+                            enemyList = populateFloor(scene)
+                            playerSpawnX = originalFloorData[scene].playerSpawnX
+                            playerSpawnY = originalFloorData[scene].playerSpawnY
+                            function getConnectedSockets() {
+                                var vals = Object.keys(io.of("/play").connected).map(function(key) {
+                                    return io.of("/play").connected[key];
+                                });
+                                return vals
+                            }
+                            
+                            getConnectedSockets().forEach(function(s) {
+                                s.disconnect(true);
+                            });
+                        },5000)
+
+                    }
+                }
+                if(enemyList[key].health <= 0){
+                    delete enemyList[key]
+                    io.emit('enemyDeath',key)
+                }
+            }
+            
         }
-        xvel = 0
-    }
-    xpos += xvel;
-    //Vertical Collision
-    if (place_meeting(xpos+xvel,ypos,width,height,map)){	
-        while(!place_meeting(xpos+xvel,ypos,width,height,map)){
-            xpos += Math.sign(xvel);
+        if(projectileIndex.index >= Number.MAX_SAFE_INTEGER-1000){
+            projectileIndex.index = 0
         }
-        xvel = 0
-    }
-    ypos += yvel
-    return [xpos,ypos]
-} 
-
-function place_meeting(x,y, width, height,map){
-    //Algorithm:
-    //Define a rectangle using startpos(x,y) and width and height
-    //A rectangle is defined by four points (x0,y0),(x0,y1),(x1,y0),(x1,y1)
-    //Do a nested for loop through starting at (x0,y0) up to (x1,y1) with steps of the tilemap width/height
-    //If any tiles are found(nonzero) then return true
-    //If the loop completes return  false
-
-
-    //Define the rectangle
-    var x0 = x-Math.floor(width/2);
-    var y0 = y-Math.floor(height/2);
-    var x1 = x + Math.floor(width/2);
-    var y1 = y + Math.floor(height/2);
-    xcorners = [x0,x1]
-    ycorners = [y0,y1]
-
-    function queryTile(x,y,map){
-        var tiledX = Math.floor(x/map.tilewidth);
-        var tiledY = Math.floor(y/map.tileheight);
-        tilePos = tiledX + tiledY * (map.width)
-        return map.layers[2].data[tilePos] 
-    }
-
-    // Check corners
-    for(var i = 0; i < xcorners.length; i++){
-        for(var j = 0; j < ycorners.length; j++){
-            var tile = queryTile(xcorners[i],ycorners[j],map)
-            if(tile != null && tile != 0){
-                return true
+        for(key in projectiles){
+            projectiles[key].update()
+            if(projectiles[key].x < -50 || projectiles[key].x > 3000 || projectiles[key].y < -50 || projectiles[key].y > 3000){
+                io.emit('projectileDeath',projectiles[key].id)
+                delete projectiles[key]
             }
         }
-    }
 
-    // Check positions inside the object
-    for(var x = x0; x<x1; x+=map.tilewidth){
-        for (var y = y0; y<y1; y+=map.tileheight){
-            var tile = queryTile(x,y,map)
-            if(tile != null && tile != 0){
-                return tile
-            }
-        }
-    }
+        io.emit('updateEnemies',enemyList)
+        io.emit('updateProjectiles', projectiles)
 
-    return false
+        update()
+    }, 33)
 }
+
+function populateFloor(floor){
+    var enemyList = []
+    var enemyData = originalFloorData[floor].enemyList
+    for(var i=0;i<enemyData.length;i++){
+        var enemyConstructor = enemies[enemyData[i].name]
+        enemyList.push(new enemyConstructor(enemyData[i].x,enemyData[i].y,enemyData[i].health,enemyData[i].id))
+    }
+    return enemyList
+}
+
