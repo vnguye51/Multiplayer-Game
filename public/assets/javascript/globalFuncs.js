@@ -291,7 +291,7 @@ function updateProjectile(_this,projectileInfo){
 function removeProjectile(_this,projectileID){
     enemyProjectiles.getChildren().forEach(function(projectile){
         if(projectile.id == projectileID){
-            enemyProjectiles.remove(enemy,true)
+            enemyProjectiles.remove(projectile,true)
         }
     })
 }
@@ -338,7 +338,7 @@ function constrainReticle(reticle)
 function sockets() {
     //Attach socket to the game for ease of access
     // socket = io('https://52.53.200.224:443')
-    socket = io('https://journeyabyss.com')
+    // socket = io('https://journeyabyss.com')
     socket = io()
 
     //currentPlayers is sent when you connect to the server

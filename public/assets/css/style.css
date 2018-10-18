@@ -1,9 +1,10 @@
 body{
     background-color: rgb(4, 5, 20);
+    font-family: 'Roboto', sans-serif;
 }
 
 #main{
-    margin: 0 80px,
+    margin: 0 80px
 }
 
 #buttonContainer{
@@ -39,7 +40,7 @@ canvas{
 
 .infoElement{
     float: left;
-    width: 33%
+    width: 50%
 }
 
 a{

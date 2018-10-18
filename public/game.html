@@ -8,11 +8,42 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
     <script src="assets/javascript/phaser.js"></script>
-
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous">
+    </script>
 </head>
 
 <body>
     <div id='game'></div>
+
+
+    <div id='infoBox'>
+        <div id='infoHeader'>
+            <div class='infoElement' id='infolink'><a href='#'  >ABOUT</a></div>
+            <div class='infoElement' id='attributionlink'><a href='#'>ATTRIBUTIONS</a></div>
+        </div>
+        <div id='infoBody'>
+            Join your friends and journey into the abyss. Abyss is a persistent multiplayer game where progress is persistent between all players around the world. No enemies respawn or heal until the final boss is defeated.
+            <br><br>
+            Controls: WASD movement, SPACE to attack.
+        </div>
+        <div id='attributionBody' hidden>
+            <div>
+                Creator: <a href='https://www.linkedin.com/in/vincent-nguyen-342015164/' target='_blank'>Vincent Nguyen</a>
+            </div>
+            <div>
+                <p>Sprites by <a href='https://opengameart.org/users/lunarsignals' target='_blank'>LUNARSIGNALS</a> CC-BY-SA 3.0</p>
+            </div>
+            <div>
+                <p>Tilesets by <a href='https://opengameart.org/users/beast' target='_blank'>Beast</a> CC-BY 3.0</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
     <script type = 'text/javascript' src = 'assets/javascript/globalFuncs.js'></script>
     <script type = 'text/javascript' src = 'assets/javascript/playerAnimations.js'></script>
@@ -25,5 +56,15 @@
     <script type='text/javascript' src='assets/UI/ui.js'></script>
     <script type='text/javascript' src='assets/UI/bossUI.js'></script>
     <script type='text/javascript' src='assets/javascript/game.js'></script>
+    <script>
+        $('#infolink').on('click', function(){
+        $('#infoBody').show()
+        $('#attributionBody').hide()
+        })
+        $('#attributionlink').on('click',function(){
+        $('#infoBody').hide()
+        $('#attributionBody').show()
+        })
+        </script>
 </body>
 
