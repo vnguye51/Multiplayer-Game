@@ -11,7 +11,7 @@ var config = {
         }
     },
     parent: 'game',
-    scene: [lobby,floor1,floor2,floor3,floor4,ui,BossUI]
+    scene: [credits,lobby,floor1,floor2,floor3,floor4,ui,BossUI]
 };
 
 

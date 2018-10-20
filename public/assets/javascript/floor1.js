@@ -1,5 +1,4 @@
 
-
 class floor1 extends Phaser.Scene {
 
     constructor ()
