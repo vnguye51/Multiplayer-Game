@@ -45,7 +45,9 @@ class floor1 extends Phaser.Scene {
 
         
         sockets();
-
+        
+        //nametag
+        this.nametag = this.add.text(0,0,playerName,{fontSize: '10px'}).setOrigin(0.5,0.5)
 
         //camera
         this.cameras.main.setSize(320, 240);
@@ -189,6 +191,9 @@ class floor1 extends Phaser.Scene {
                     spaceIsPressed = false
                 }
             }
+            //Nametag follows player
+            this.nametag.x = this.player.x
+            this.nametag.y = this.player.y+20
         }
     }
 }

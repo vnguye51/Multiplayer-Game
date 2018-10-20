@@ -55,6 +55,9 @@ class start extends Phaser.Scene {
                     this.nameCursor.x -= 5
                 }
             }
+            else if(event.keyCode == 13){
+                this.startGame()
+            }
         })
     }
 

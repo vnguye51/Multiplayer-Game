@@ -29,7 +29,7 @@ class credits extends Phaser.Scene {
 
     create(){
         // this.cameras.main.followOffset.y = 300
-        this.add.text(160,120, creditsText[0], {fontSize: '24px'}).setOrigin(0.5,0.5)
+        this.add.text(160,120, creditsText[0], {fontSize: '32px'}).setOrigin(0.5,0.5)
         this.add.text(160,360, creditsText[1], {fontSize: '12px'}).setOrigin(0.5,0.5)
         this.add.text(160,600, creditsText[2], {fontSize: '12px'}).setOrigin(0.5,0.5)
         this.add.text(160,840, creditsText[3], {fontSize: '12px'}).setOrigin(0.5,0.5)

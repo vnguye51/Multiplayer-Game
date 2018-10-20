@@ -16,7 +16,7 @@ var PORT = 3001;
 
 var players = {};
 var tombstones = []
-var scene = 'floor1'
+var scene = 'floor4'
 var enemyList = populateFloor(scene);
 var projectiles ={}
 var playerSpawnX = originalFloorData[scene].playerSpawnX

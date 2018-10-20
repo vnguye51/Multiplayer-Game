@@ -50,7 +50,8 @@ var enemyList4 = []
 enemyList4[enemyList4.length] = {
     x: 300,
     y: 140,
-    health: 80,
+    health: 1,
+    // health: 80,
     id: enemyList4.length,
     name: 'Whelp'
 }

@@ -13,7 +13,6 @@ class ui extends Phaser.Scene {
 
     create(){
         uiScene = this
-
         uiScene.deathText = uiScene.add.text(6,80,'    YOU DIED     ',{fontSize: '32px'})
         uiScene.deathText.setInteractive();
         uiScene.deathText.setVisible(false)
@@ -22,7 +21,7 @@ class ui extends Phaser.Scene {
         uiScene.resetButton.setInteractive();
         uiScene.resetButton.setVisible(false)
         // uiScene.resetButton.setActive(false)
-        uiScene.resetButton.on('pointerover', () => {console.log('hi');uiScene.resetButton.setColor('#ff0000')})
+        uiScene.resetButton.on('pointerover', () => {uiScene.resetButton.setColor('#ff0000')})
         uiScene.resetButton.on('pointerout', () => {uiScene.resetButton.setColor('#ffffff')})
         uiScene.resetButton.on('pointerdown', () => {reset()})
 

@@ -517,12 +517,15 @@ function sockets() {
     })
 
     socket.on('Victory', function(){
-        uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
-        uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
-        setTimeout(function(){
+        var victoryText = uiScene.add.text(160,120,'VICTORY',{fontSize:'32px'}).setOrigin(0.5,0.5)
+            setTimeout(function(){
             socket.disconnect();
-            location.assign('/')
-        },10000)
+            _this.player = null;
+            uiScene.scene.remove()
+            _this.scene.get('bossUI').scene.remove()
+            _this.scene.start('credits');
+            
+        },5000)
     })
 }
 
