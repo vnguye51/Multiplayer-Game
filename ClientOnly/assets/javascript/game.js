@@ -16,7 +16,6 @@ var config = {
 
 var game = new Phaser.Game(config);
 //Define global variables(might want to move them into the classes later)
-
 var enemies 
 var socket 
 var enemyAttackGroup

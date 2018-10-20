@@ -33,7 +33,7 @@ class credits extends Phaser.Scene {
         this.add.text(160,360, creditsText[1], {fontSize: '12px'}).setOrigin(0.5,0.5)
         this.add.text(160,600, creditsText[2], {fontSize: '12px'}).setOrigin(0.5,0.5)
         this.add.text(160,840, creditsText[3], {fontSize: '12px'}).setOrigin(0.5,0.5)
-        var end = this.add.text(160,1200, creditsText[4], {fontSize: '24px'}).setOrigin(0.5,0.5)
+        this.add.text(160,1200, creditsText[4], {fontSize: '24px'}).setOrigin(0.5,0.5)
         var lancer = this.add.sprite(160,630)
         var bat = this.add.sprite(160,660)
         var whelp = this.add.sprite(160,710)
