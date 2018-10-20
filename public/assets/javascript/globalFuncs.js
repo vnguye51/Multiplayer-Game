@@ -1,10 +1,10 @@
 
 function changeScene(scene) {
-    socket.disconnect();
     if(_this.player.health<= 0){
-        location.assign('/')
+        reset()
     }
     else{
+        socket.disconnect();
         _this.player = null;
         _this.scene.start(scene);
     }
@@ -209,10 +209,19 @@ function playerDeath(player){
     player.setVelocityY(0)
     _this.physics.add.sprite(player.x,player.y,'tombstone')
     _this.player.visible = false
-    uiScene.add.text(8,80,'    YOU DIED     ',{fontSize: '32px'})
-    uiScene.add.text(12,116,' Reload the page to try again', {fontSize: '16px'})
-
     socket.emit('playerDeath',socket.id)
+    uiScene.deathText.setVisible(true)
+    uiScene.resetButton.setVisible(true)
+}
+
+
+function reset(){
+    uiScene.resetButton.setVisible(false)
+    uiScene.deathText.setVisible(false)
+    socket.disconnect()
+    _this.scene.restart()
+
+    //Reset the player values
 }
 
 function addPlayer(_this, playerInfo){
