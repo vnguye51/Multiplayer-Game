@@ -47,15 +47,19 @@ io.on('connection', function (socket) {
         nextFloor: false,
         alive: true,
     };
-    // send the players object to the new player
-    socket.emit('currentPlayers', players);
+    socket.on('name',function(name){
+        players[socket.id].name = name
+        socket.broadcast.emit('newPlayer', players[socket.id]);
+        socket.emit('currentPlayers', players);
+    })
+    // // send the players object to the new player
+    // socket.emit('currentPlayers', players);
     // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
     // send the current scene to the new player
     socket.emit('currentProjectiles', projectiles);
     // update all other players of the new player
     socket.emit('currentTombstones' , tombstones)
-    socket.broadcast.emit('newPlayer', players[socket.id]);
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
         console.log('user disconnected');
