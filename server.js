@@ -5,10 +5,16 @@ require('dotenv').config()// Create an instance of the express app.
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
+var mongoose = require("mongoose");
 
 var originalFloorData = require('./serverscripts/floorData').floors
 
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI);
 
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
+var db = require("./models");
+// db.Record.save
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
 var PORT = 3001;
@@ -22,6 +28,8 @@ var projectiles ={}
 var playerSpawnX = originalFloorData[scene].playerSpawnX
 var playerSpawnY = originalFloorData[scene].playerSpawnY
 var projectileIndex = {index: 0}
+
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/Abyss";
 
 
 app.use(express.static(__dirname + '/public'));
