@@ -38,6 +38,11 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
     console.log('a user connected');
     // create a new player and add it to our players object
+    var letters = '0123456789ABCDEF';
+    var color = '0x'
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * letters.length)];
+    }
     players[socket.id] = {
         rotation: 0,
         x: playerSpawnX,
@@ -46,6 +51,7 @@ io.on('connection', function (socket) {
         playerId: socket.id,
         nextFloor: false,
         alive: true,
+        tint: color
     };
     socket.on('name',function(name){
         players[socket.id].name = name

@@ -248,7 +248,8 @@ function addOtherPlayer(_this, playerInfo){
     var otherPlayer = _this.add.sprite(playerInfo.x, playerInfo.y, 'player');
     otherPlayer.nametag = _this.add.text(playerInfo.x,playerInfo.y+20,playerInfo.name,{fontSize: '10px'}).setOrigin(0.5,0.5)
     otherPlayer.rot = playerInfo.rot
-    otherPlayer.setTint(0x00ff00);
+
+    otherPlayer.setTint(playerInfo.tint);
     otherPlayer.playerId = playerInfo.playerId;
     _this.otherPlayers.add(otherPlayer);
 }
