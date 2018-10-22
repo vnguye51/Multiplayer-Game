@@ -28,6 +28,8 @@
             Join your friends and journey into the abyss. Abyss is a persistent multiplayer game where progress is persistent between all players around the world. No enemies respawn or heal until the final boss is defeated.
             <br><br>
             Controls: WASD movement, SPACE to attack.
+            <br><br>
+            Deaths: <span id = 'deathCount'></span>
         </div>
         <div id='attributionBody' hidden>
             <div>
@@ -68,6 +70,10 @@
         $('#attributionlink').on('click',function(){
         $('#infoBody').hide()
         $('#attributionBody').show()
+        })
+        var metadata = io('/metadata')
+        metadata.on('deathCount',(deaths)=>{
+            $('#deathCount').text(deaths)
         })
         </script>
 </body>

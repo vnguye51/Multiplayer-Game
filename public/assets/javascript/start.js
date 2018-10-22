@@ -9,7 +9,7 @@ class start extends Phaser.Scene {
     }
     startGame(){
         playerName = this.playerName
-        socket = io()
+        socket = io('/gameRoom')
         socket.on('changeScene',function(scene){
                 socket.disconnect();
                 _this.scene.start(scene);

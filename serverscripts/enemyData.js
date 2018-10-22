@@ -83,8 +83,9 @@ Tier1Melee = function(x,y,health,id){
                 else if(this.state == 'aggro'){
                     if(this.target && this.target.x && this.target.alive){
                         reAggro(this,players)
-                        
-                        var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                        if(this.target){
+                            var uvec = unitVector(this.x,this.y,this.target.x,this.target.y)
+                        }
                         if(Math.abs(uvec[0]) > Math.abs(uvec[1])){
                             if(uvec[0] > 0){
                                 this.animation = 'lancerRight'

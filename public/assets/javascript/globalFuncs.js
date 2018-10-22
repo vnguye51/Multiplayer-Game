@@ -352,7 +352,7 @@ function sockets() {
     //Attach socket to the game for ease of access
     // socket = io('https://52.53.200.224:443')
     // socket = io('https://journeyabyss.com')
-    socket = io()
+    socket = io('/gameRoom')
     socket.emit('name', playerName)
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client

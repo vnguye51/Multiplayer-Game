@@ -10,7 +10,6 @@ var RecordSchema = new Schema({
   deaths: {
     type: Number,
     required: true,
-    unique: true,
   },
   // `link` is required and of type String
   duration: {
