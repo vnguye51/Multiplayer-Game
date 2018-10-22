@@ -6,34 +6,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rpg</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-    <script src="assets/javascript/phaser.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <script src="assets/javascript/phaser.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous">
+    </script>
 </head>
 
 <body>
-    <div id ='main'>
-        <div id ='buttonContainer'>
-            <a href='/play'><button>JOIN THE FIGHT</button></a>
+    <div id='game'></div>
+
+
+    <div id='infoBox'>
+        <div id='infoHeader'>
+            <div class='infoElement' id='infolink'><a href='#'  >ABOUT</a></div>
+            <div class='infoElement' id='attributionlink'><a href='#'>ATTRIBUTIONS</a></div>
         </div>
-        <div id='infoBox'>
-            <div id='infoHeader'>
-                <div class='infoElement'><a href='#'>ABOUT(placeholder)</a></div>
-                <div class='infoElement'><a href='#'>INSTRUCTIONS(placeholder)</a></div>
-                <div class='infoElement'><a href='#'>CREDITS(placeholder)</a></div>
+        <div id='infoBody'>
+            Join your friends and journey into the abyss. Abyss is a persistent multiplayer game where progress is persistent between all players around the world. No enemies respawn or heal until the final boss is defeated.
+            <br><br>
+            Controls: WASD movement, SPACE to attack.
+            <br><br>
+            Deaths: <span id = 'deathCount'></span>
+        </div>
+        <div id='attributionBody' hidden>
+            <div>
+                Creator: <a href='https://www.linkedin.com/in/vincent-nguyen-342015164/' target='_blank'>Vincent Nguyen</a>
             </div>
-            <div id='infoBody'>
-                Join players online to traverse the dungeon and defeat the boss. Progress is persistent between all players around the world. No enemies respawn and when a level is cleared all new players will join at the next level.
-                <br><br>
-                Deaths so far: {placeholder}
-                <br><br>
-                Controls: WASD movement, SPACE to attack.
+            <div>
+                <p>Sprites by <a href='https://opengameart.org/users/lunarsignals' target='_blank'>LUNARSIGNALS</a> CC-BY-SA 3.0</p>
+            </div>
+            <div>
+                <p>Tilesets by <a href='https://opengameart.org/users/beast' target='_blank'>Beast</a> CC-BY 3.0</p>
             </div>
         </div>
     </div>
+</body>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
+    <script type = 'text/javascript' src = 'assets/javascript/globalFuncs.js'></script>
+    <script type = 'text/javascript' src = 'assets/javascript/playerAnimations.js'></script>
+    <script type='text/javascript' src='assets/enemies/scripts/clientEnemies.js'></script>
+    <script type='text/javascript' src='assets/javascript/lobby.js'></script>
+    <script type='text/javascript' src='assets/javascript/floor1.js'></script>
+    <script type='text/javascript' src='assets/javascript/floor2.js'></script>
+    <script type='text/javascript' src='assets/javascript/floor3.js'></script>
+    <script type='text/javascript' src='assets/javascript/floor4.js'></script>
+    <script type='text/javascript' src='assets/UI/ui.js'></script>
+    <script type='text/javascript' src='assets/UI/bossUI.js'></script>
+    <script type='text/javascript' src='assets/javascript/credits.js'></script>
+    <script type='text/javascript' src='assets/javascript/start.js'></script>
+
+    <script type='text/javascript' src='assets/javascript/game.js'></script>
+    <script>
+
+        $('#infolink').on('click', function(){
+        $('#infoBody').show()
+        $('#attributionBody').hide()
+        })
+        $('#attributionlink').on('click',function(){
+        $('#infoBody').hide()
+        $('#attributionBody').show()
+        })
+        var metadata = io('/metadata')
+        metadata.on('deathCount',(deaths)=>{
+            $('#deathCount').text(deaths)
+        })
+        </script>
 </body>
 

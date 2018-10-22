@@ -1,10 +1,10 @@
 
 
-class floor2 extends Phaser.Scene {
+class floor3 extends Phaser.Scene {
 
     constructor ()
     {
-        super({ key: 'floor2' });
+        super({ key: 'floor3' });
     }
 
     preload () //preload occurs prior to the scene(game) being instantiated
@@ -17,24 +17,22 @@ class floor2 extends Phaser.Scene {
         //Load enemy assets
         this.load.spritesheet('lancer','assets/enemies/sprites/lancer/lancer.png',{frameWidth: 16,frameHeight:16})
         this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
-        
-        //Load enemy assets
-    
+        this.load.spritesheet('whelp','assets/enemies/sprites/whelp/Whelp.png',{frameWidth:64,frameHeight:64})
+        this.load.image('fireball', 'assets/projectiles/fireball.png')
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
-        this.load.tilemapTiledJSON('floor2','assets/tilemap/Floor2.json')
-    
+        this.load.tilemapTiledJSON('floor3','assets/tilemap/Floor3.json')
     }
     
     create () //Occurs when the scene is instantiated
     {
+
         this.scene.launch('UI')
         _this = this
         //Assigns the input keys. 
         enemies = this.physics.add.group()
         enemyAttackGroup = this.physics.add.group()
         enemyProjectiles = this.physics.add.group()
-
 
         definePlayerAnimations(this)
 
@@ -50,17 +48,14 @@ class floor2 extends Phaser.Scene {
         
         sockets();
 
-        //nametag
-        this.nametag = this.add.text(0,0,playerName,{fontSize: '10px'}).setOrigin(0.5,0.5)
 
         //camera
         this.cameras.main.setSize(320, 240);
-        this.cameras.main.setBounds(0,0,640,480)
-
+        this.cameras.main.setBounds(0,0,1920,1280)
         
 
         ////TILEMAP DATA
-        map = this.make.tilemap({key: 'floor2'}) //Create tilemap
+        map = this.make.tilemap({key: 'floor3'}) //Create tilemap
         var tileset = map.addTilesetImage('cave') //Use the tileset(must be the same name as the one in the Tiled editor)
 
         //Create the layers
@@ -75,8 +70,9 @@ class floor2 extends Phaser.Scene {
 
 
         objectLayer = map.createStaticLayer('Objects',tileset,0,0)
-        objectLayer.setCollisionByExclusion([-1,21,37])
-        objectLayer.setTileIndexCallback([21],function(){
+        objectLayer.setCollisionByExclusion([-1,53,69,85,100,101,102])
+        objectLayer.setDepth(-1)
+        objectLayer.setTileIndexCallback([53],function(){
             _this.player.stats.control = false
             _this.player.body.velocity.x = 0
             _this.player.body.velocity.y = 0
@@ -84,16 +80,14 @@ class floor2 extends Phaser.Scene {
             socket.emit('floorChange','floor4',socket.id)
         },this)
 
-        objectLayer.setDepth(-1)
 
-        //Player Inputs go here
 
-       //Enemy Animations
-       this.anims.create({
-        key: 'lancerDown',
-        frames: this.anims.generateFrameNumbers('lancer', { start: 0, end: 3 }),
-        frameRate: 10,
-        repeat: -1
+        //Enemy Animations
+        this.anims.create({
+            key: 'lancerDown',
+            frames: this.anims.generateFrameNumbers('lancer', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
         })
         this.anims.create({
             key: 'lancerRight',
@@ -121,6 +115,26 @@ class floor2 extends Phaser.Scene {
             repeat: -1
         })
 
+        this.anims.create({
+            key: 'whelpIdle',
+            frames: this.anims.generateFrameNumbers('whelp', {start:0,end: 4}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'whelpFire',
+            frames: this.anims.generateFrameNumbers('whelp', {start:5,end: 5}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key:'fireball',
+            frames: this.anims.generateFrameNumbers('fireball',{start:0,end:0}),
+            frameRate: 10,
+            repeat: -1
+        })
     }
     
     update() //Update is called every frame
@@ -177,9 +191,7 @@ class floor2 extends Phaser.Scene {
                     spaceIsPressed = false
                 }
             }
-            //Nametag follows player
-            this.nametag.x = this.player.x
-            this.nametag.y = this.player.y+20
         }
     }
 }
+

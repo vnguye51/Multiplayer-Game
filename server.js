@@ -5,18 +5,30 @@ require('dotenv').config()// Create an instance of the express app.
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
+var mongoose = require("mongoose");
+
+var startTime = new Date()
+
 
 var originalFloorData = require('./serverscripts/floorData').floors
 
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/Abyss";
+mongoose.Promise = Promise;
+mongoose.connect(MONGODB_URI);
 
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
+var db = require("./models");
+// db.Record.save
 // Set the port of our application
 // process.env.PORT lets the port be set by Heroku
-var PORT = process.env.PORT || 4040;
+var PORT = 3001;
 
 
+//Initial values
 var players = {};
 var tombstones = []
-var scene = 'floor1'
+var deaths = 0
+var scene = 'floor4'
 var enemyList = populateFloor(scene);
 var projectiles ={}
 var playerSpawnX = originalFloorData[scene].playerSpawnX
@@ -24,20 +36,35 @@ var playerSpawnY = originalFloorData[scene].playerSpawnY
 var projectileIndex = {index: 0}
 
 
+
 app.use(express.static(__dirname + '/public'));
+// app.use(express.static(__dirname + '/ClientOnly'));
+
 //Allow static files in the public folder to be retrieved from server
 
 app.get('/play', function (req, res) {
     res.sendFile(__dirname + '/public/game.html');
+    // res.sendFile(__dirname + '/ClientOnly/index.html')
   });
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
+    // res.sendFile(__dirname + '/ClientOnly/index.html')
   });
-
-io.on('connection', function (socket) {
+var metadata = io.of('/metadata')
+metadata.on('connection',function(socket){
+    console.log('a user connected to /metadata')
+    socket.emit('deathCount',deaths)
+})
+var gameRoom = io.of('gameRoom')
+gameRoom.on('connection', function(socket){
     console.log('a user connected');
     // create a new player and add it to our players object
+    var letters = '0123456789ABCDEF';
+    var color = '0x'
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * letters.length)];
+    }
     players[socket.id] = {
         rotation: 0,
         x: playerSpawnX,
@@ -46,23 +73,28 @@ io.on('connection', function (socket) {
         playerId: socket.id,
         nextFloor: false,
         alive: true,
+        tint: color
     };
-    // send the players object to the new player
-    socket.emit('currentPlayers', players);
+    socket.on('name',function(name){
+        players[socket.id].name = name
+        socket.broadcast.emit('newPlayer', players[socket.id]);
+        socket.emit('currentPlayers', players);
+    })
+    // // send the players object to the new player
+    // socket.emit('currentPlayers', players);
     // send the enemies list to the new player
     socket.emit('currentEnemies', enemyList);
     // send the current scene to the new player
     socket.emit('currentProjectiles', projectiles);
     // update all other players of the new player
     socket.emit('currentTombstones' , tombstones)
-    socket.broadcast.emit('newPlayer', players[socket.id]);
     // when a player disconnects, remove them from our players object
     socket.on('disconnect', function () {
         console.log('user disconnected');
         // remove this player from our players object
         delete players[socket.id];
         // emit a message to all players to remove this player
-        io.emit('disconnect', socket.id);
+        gameRoom.emit('disconnect', socket.id);
     });
 
     socket.on('firstConnect',function(){
@@ -70,9 +102,11 @@ io.on('connection', function (socket) {
     })
 
     socket.on('playerDeath', function(playerId){
+        deaths += 1
         players[playerId].alive = false
         tombstones.push({x: players[playerId].x,y: players[playerId].y})
         socket.broadcast.emit('playerDeath',playerId)
+        metadata.emit('deathCount',deaths)
     })
 
     socket.on('playerMovement', function (movementData) {
@@ -120,7 +154,7 @@ io.on('connection', function (socket) {
             tombstones = []
             playerSpawnX = originalFloorData[scene].playerSpawnX
             playerSpawnY = originalFloorData[scene].playerSpawnY
-            io.emit('changeScene', scene)
+            gameRoom.emit('changeScene', scene)
         }
     })
 });
@@ -140,18 +174,25 @@ function update(){
             if(enemyList[key]){
                 enemyList[key].update(players,enemyList,projectiles,projectileIndex)
                 if(enemyList[key].boss){
-                    io.emit('updateBossHealth',enemyList[key].health)
+                    gameRoom.emit('updateBossHealth',enemyList[key].health)
                     if(enemyList[key].health == 0){
-                        io.emit('Victory')
+                        gameRoom.emit('Victory')
+                        db.Record.create({
+                            deaths: deaths,
+                            duration: new Date() - startTime,
+                        })
                         setTimeout(function(){
                             scene = 'floor1'
+                            deaths = 0;
                             tombstones = []
                             enemyList = populateFloor(scene)
+                            startTime = new Date()
                             playerSpawnX = originalFloorData[scene].playerSpawnX
                             playerSpawnY = originalFloorData[scene].playerSpawnY
+                            metadata.emit('deathCount',deaths)
                             function getConnectedSockets() {
-                                var vals = Object.keys(io.of("/play").connected).map(function(key) {
-                                    return io.of("/play").connected[key];
+                                var vals = Object.keys(gameRoom.connected).map(function(key) {
+                                    return gameRoom.connected[key];
                                 });
                                 return vals
                             }
@@ -165,7 +206,7 @@ function update(){
                 }
                 if(enemyList[key].health <= 0){
                     delete enemyList[key]
-                    io.emit('enemyDeath',key)
+                    gameRoom.emit('enemyDeath',key)
                 }
             }
             
@@ -176,13 +217,13 @@ function update(){
         for(key in projectiles){
             projectiles[key].update()
             if(projectiles[key].x < -50 || projectiles[key].x > 3000 || projectiles[key].y < -50 || projectiles[key].y > 3000){
-                io.emit('projectileDeath',projectiles[key].id)
+                gameRoom.emit('projectileDeath',projectiles[key].id)
                 delete projectiles[key]
             }
         }
 
-        io.emit('updateEnemies',enemyList)
-        io.emit('updateProjectiles', projectiles)
+        gameRoom.emit('updateEnemies',enemyList)
+        gameRoom.emit('updateProjectiles', projectiles)
 
         update()
     }, 33)
