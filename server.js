@@ -37,15 +37,19 @@ var projectileIndex = {index: 0}
 
 
 
-app.use(express.static(__dirname + '/public'));
+// app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/ClientOnly'));
+
 //Allow static files in the public folder to be retrieved from server
 
 app.get('/play', function (req, res) {
     res.sendFile(__dirname + '/public/game.html');
+    // res.sendFile(__dirname + '/ClientOnly/index.html')
   });
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
+    // res.sendFile(__dirname + '/ClientOnly/index.html')
   });
 var metadata = io.of('/metadata')
 metadata.on('connection',function(socket){

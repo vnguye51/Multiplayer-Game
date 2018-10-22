@@ -9,14 +9,17 @@ var config = {
             debug: false
         }
     },
-    scene: [lobby,floor1,floor2,floor3,floor4,ui,BossUI]
+    scene: [start,credits,lobby,floor1,floor2,floor3,floor4,ui,BossUI]
 };
 
 
 
 var game = new Phaser.Game(config);
 //Define global variables(might want to move them into the classes later)
+
 var enemies 
+var playerName = ''
+
 var socket 
 var enemyAttackGroup
 var enemyProjectiles
@@ -60,3 +63,4 @@ else game.events.once('boot', resize);
 
 resize()
                 
+

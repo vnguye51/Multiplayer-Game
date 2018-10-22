@@ -12,7 +12,7 @@ class lobby extends Phaser.Scene {
     create(){
         _this = this
         // socket = io('https://52.53.200.224:443')
-        socket = io('https://journeyabyss.com')
+        socket = io('https://journeyabyss.com/gameRoom')
         // socket = io()
         socket.on('changeScene',function(scene){
                 socket.disconnect();

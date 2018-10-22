@@ -1,10 +1,10 @@
 
 function changeScene(scene) {
-    socket.disconnect();
     if(_this.player.health<= 0){
-        location.assign('/')
+        reset()
     }
     else{
+        socket.disconnect();
         _this.player = null;
         _this.scene.start(scene);
     }
@@ -207,12 +207,23 @@ function hitByProjectile(player, projectile){
 function playerDeath(player){
     player.setVelocityX(0)
     player.setVelocityY(0)
+    _this.nametag.destroy()
     _this.physics.add.sprite(player.x,player.y,'tombstone')
     _this.player.visible = false
-    uiScene.add.text(8,80,'    YOU DIED     ',{fontSize: '32px'})
-    uiScene.add.text(12,116,' Reload the page to try again', {fontSize: '16px'})
-
     socket.emit('playerDeath',socket.id)
+    uiScene.deathText.setVisible(true)
+    uiScene.resetButton.setVisible(true)
+
+}
+
+
+function reset(){
+    uiScene.resetButton.setVisible(false)
+    uiScene.deathText.setVisible(false)
+    socket.disconnect()
+    _this.scene.restart()
+
+    //Reset the player values
 }
 
 function addPlayer(_this, playerInfo){
@@ -235,8 +246,10 @@ function addPlayer(_this, playerInfo){
 
 function addOtherPlayer(_this, playerInfo){
     var otherPlayer = _this.add.sprite(playerInfo.x, playerInfo.y, 'player');
+    otherPlayer.nametag = _this.add.text(playerInfo.x,playerInfo.y+20,playerInfo.name,{fontSize: '10px'}).setOrigin(0.5,0.5)
     otherPlayer.rot = playerInfo.rot
-    otherPlayer.setTint(0x00ff00);
+
+    otherPlayer.setTint(playerInfo.tint);
     otherPlayer.playerId = playerInfo.playerId;
     _this.otherPlayers.add(otherPlayer);
 }
@@ -291,7 +304,7 @@ function updateProjectile(_this,projectileInfo){
 function removeProjectile(_this,projectileID){
     enemyProjectiles.getChildren().forEach(function(projectile){
         if(projectile.id == projectileID){
-            enemyProjectiles.remove(enemy,true)
+            enemyProjectiles.remove(projectile,true)
         }
     })
 }
@@ -338,7 +351,9 @@ function constrainReticle(reticle)
 function sockets() {
     //Attach socket to the game for ease of access
     // socket = io('https://52.53.200.224:443')
-    socket = io('https://journeyabyss.com')
+    socket = io('https://journeyabyss.com/gameRoom')
+    // socket = io('/gameRoom')
+    socket.emit('name', playerName)
     //currentPlayers is sent when you connect to the server
     //Grabs the list of players including yourself from the server and adds them to the client
     socket.on('currentPlayers', function (players) {
@@ -431,17 +446,22 @@ function sockets() {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             if (playerId === otherPlayer.playerId) {
                 otherPlayer.destroy();
+                otherPlayer.nametag.destroy();
             }
         });
     });
 
-    //Whenever a player moves or changes rotation on the server update it in the client
+    //Whenever a player moves update it in the client
     socket.on('playerMoved', function (playerInfo) {
         _this.otherPlayers.getChildren().forEach(function (otherPlayer) {
             //Might be inefficient code revisit later. Shouldn't have to loop through all the IDs
             if (playerInfo.playerId === otherPlayer.playerId) {
                 otherPlayer.setRotation(playerInfo.rotation);
                 otherPlayer.setPosition(playerInfo.x, playerInfo.y)
+                // console.log(otherPlayer.nametag)
+                otherPlayer.nametag.x = playerInfo.x
+                otherPlayer.nametag.y = playerInfo.y+20
+
                 if(playerInfo.currentAnim){
                     otherPlayer.anims.play(playerInfo.currentAnim,true)
                     if(playerInfo.currentAnim == 'left'){
@@ -501,17 +521,21 @@ function sockets() {
             if(otherPlayer.playerId == playerId){
             _this.physics.add.sprite(otherPlayer.x,otherPlayer.y,'tombstone').setDepth(-1)
             otherPlayer.visible = false
+            otherPlayer.nametag.destroy()
             }
         })
     })
 
     socket.on('Victory', function(){
-        uiScene.add.text(16,80,'    YOU ARE     ',{fontSize: '32px'})
-        uiScene.add.text(64,112,'VICTORIOUS',{fontSize:'32px'})
-        setTimeout(function(){
+        var victoryText = uiScene.add.text(160,120,'VICTORY',{fontSize:'32px'}).setOrigin(0.5,0.5)
+            setTimeout(function(){
             socket.disconnect();
-            location.assign('/')
-        },10000)
+            _this.player = null;
+            uiScene.scene.remove()
+            _this.scene.get('bossUI').scene.remove()
+            _this.scene.start('credits');
+            
+        },5000)
     })
 }
 
