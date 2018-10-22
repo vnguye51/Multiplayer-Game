@@ -37,8 +37,8 @@ var projectileIndex = {index: 0}
 
 
 
-// app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/ClientOnly'));
+app.use(express.static(__dirname + '/public'));
+// app.use(express.static(__dirname + '/ClientOnly'));
 
 //Allow static files in the public folder to be retrieved from server
 
