@@ -12,4 +12,5 @@
 * Deaths and player records are stored in a MongoDB database
 * Real-time communication between server and clients is powered by Socket.IO
 
-
+#Instructions to Run
+* The game should run out of the box. Simply add the necessary modules using npm install.
