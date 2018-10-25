@@ -22,6 +22,7 @@ class credits extends Phaser.Scene {
         this.load.spritesheet('bat','assets/enemies/sprites/bat/bat.png',{frameWidth:16,frameHeight:16})
         this.load.spritesheet('whelp','assets/enemies/sprites/whelp/Whelp.png',{frameWidth:64,frameHeight:64})
         this.load.image('fireball', 'assets/projectiles/fireball.png')
+        
         //Load tilemap assets
         this.load.image('cave', 'assets/tilemap/cave.png')
         this.load.tilemapTiledJSON('map','assets/tilemap/Map1.json')

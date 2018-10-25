@@ -7,5 +7,9 @@
 * For now, this is a proof of concept. 
 
 #Technologies
-* The game is powered by Socket.IO and Phaser3 
-* Communication
+* Server-side collision with static objects is determined by querying an object-map that stores tile-types
+* The game is rendered using Phaser3 
+* Deaths and player records are stored in a MongoDB database
+* Real-time communication between server and clients is powered by Socket.IO
+
+
